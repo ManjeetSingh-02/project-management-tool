@@ -15,3 +15,20 @@ export const verificationMailContentGenerator = (username, verificationUrl) => {
     },
   };
 };
+
+export const forgotPasswordMailContentGenerator = (username, passwordResetUrl) => {
+  return {
+    body: {
+      name: username,
+      intro: 'You have requested to reset your password.',
+      action: {
+        instructions: 'To reset your password, please click here:',
+        button: {
+          color: '#22BC66',
+          text: 'Reset your password',
+          link: passwordResetUrl,
+        },
+      },
+    },
+  };
+};
