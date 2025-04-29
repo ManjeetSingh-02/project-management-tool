@@ -23,3 +23,15 @@ export const userRegistrationValidator = () => {
       .withMessage("password is not strong enough, increase its length"),
   ];
 };
+
+export const userLoginValidator = () => {
+  return [
+    body("email")
+      .trim()
+      .notEmpty()
+      .withMessage("email is required")
+      .isEmail()
+      .withMessage("invalid email"),
+    body("password").notEmpty().withMessage("password is required"),
+  ];
+};
