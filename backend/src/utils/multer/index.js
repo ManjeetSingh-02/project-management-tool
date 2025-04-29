@@ -1,5 +1,6 @@
 import multer from "multer";
 
+// multer setup for file upload and file storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./public/images");
@@ -10,6 +11,7 @@ const storage = multer.diskStorage({
   },
 });
 
+// middleware for file upload
 export const upload = multer({
   storage: storage,
   limits: {

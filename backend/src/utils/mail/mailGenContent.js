@@ -1,13 +1,14 @@
+// function to generate the content of the verification email
 export const verificationMailContentGenerator = (username, verificationUrl) => {
   return {
     body: {
       name: username,
       intro: "Welcome to Mega Project! We're very excited to have you on board.",
       action: {
-        instructions: 'To verify your account, please click here:',
+        instructions: "To verify your account, please click here:",
         button: {
-          color: '#22BC66',
-          text: 'Verify your account',
+          color: "#22BC66",
+          text: "Verify your account",
           link: verificationUrl,
         },
       },
@@ -16,16 +17,17 @@ export const verificationMailContentGenerator = (username, verificationUrl) => {
   };
 };
 
+// function to generate the content of the forgot pasword email
 export const forgotPasswordMailContentGenerator = (username, passwordResetUrl) => {
   return {
     body: {
       name: username,
-      intro: 'You have requested to reset your password.',
+      intro: "You have requested to reset your password.",
       action: {
-        instructions: 'To reset your password, please click here:',
+        instructions: "To reset your password, please click here:",
         button: {
-          color: '#22BC66',
-          text: 'Reset your password',
+          color: "#22BC66",
+          text: "Reset your password",
           link: passwordResetUrl,
         },
       },

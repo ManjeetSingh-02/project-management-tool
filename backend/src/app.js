@@ -7,8 +7,10 @@ import {
   userRouter,
 } from "./entities/index.js";
 
+// create new express app
 const app = express();
 
+// middlewares for API routes
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/notes", noteRouter);
 app.use("/api/v1/projects", projectRouter);

@@ -1,5 +1,6 @@
 import { body } from "express-validator";
 
+// function to check for any registration validation errors
 export const userRegistrationValidator = () => {
   return [
     body("email")
@@ -24,6 +25,7 @@ export const userRegistrationValidator = () => {
   ];
 };
 
+// function to check for any login validation errors
 export const userLoginValidator = () => {
   return [
     body("email")
