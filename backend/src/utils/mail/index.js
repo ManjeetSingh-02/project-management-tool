@@ -23,7 +23,7 @@ export async function sendMail({ email, subject, mailGenContent }) {
 
   // object to store email options
   const mailOptions = {
-    from: process.env.MAILTRAP_FROM,
+    from: process.env.MAIL_SERVICE_FROM,
     to: email,
     subject: subject,
     html: mail,
@@ -32,12 +32,12 @@ export async function sendMail({ email, subject, mailGenContent }) {
 
   // create a transporter for sending emails
   const transporter = nodemailer.createTransport({
-    host: process.env.MAILTRAP_HOST,
-    port: Number(process.env.MAILTRAP_PORT),
+    host: process.env.MAIL_SERVICE_HOST,
+    port: Number(process.env.MAIL_SERVICE_PORT),
     secure: process.env.NODE_ENV === "production",
     auth: {
-      user: process.env.MAILTRAP_USERNAME,
-      pass: process.env.MAILTRAP_PASSWORD,
+      user: process.env.MAIL_SERVICE_USERNAME,
+      pass: process.env.MAIL_SERVICE_PASSWORD,
     },
   });
 
