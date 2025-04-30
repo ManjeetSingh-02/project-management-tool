@@ -4,6 +4,7 @@ import { APIError } from "../../utils/api/apiError.js";
 import { APIResponse } from "../../utils/api/apiResponse.js";
 import { sendMail } from "../../utils/mail/index.js";
 import { verificationMailContentGenerator } from "../../utils/mail/mailGenContent.js";
+import ms from "ms";
 
 export const registerUser = asyncHandler(async (req, res) => {
   // get data
@@ -38,7 +39,43 @@ export const registerUser = asyncHandler(async (req, res) => {
   return res.status(201).json(new APIResponse(201, "User registered successfully"));
 });
 
-export const loginUser = asyncHandler(async (req, res) => {});
+export const loginUser = asyncHandler(async (req, res) => {
+  // get data
+  const { email, password } = req.body;
+
+  // check if user exists
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) throw new APIError(400, "Login Error", "User doesn't exist");
+
+  // check if password is correct
+  if (!existingUser.isPasswordCorrect(password))
+    throw new APIError(400, "Login Error", "Invalid credentials");
+
+  // check if user is verified
+  if (!existingUser.isEmailVerified) throw new APIError(400, "Login Error", "Email not verified");
+
+  // generate access token
+  const accessToken = existingUser.generateAccessToken();
+
+  // save accessToken into cookies
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
+  });
+
+  // generate refresh token
+  const refreshToken = existingUser.generateRefreshToken();
+
+  // store refresh token in db
+  existingUser.refreshToken = refreshToken;
+
+  // update user in db
+  await existingUser.save();
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Login Successful"));
+});
 
 export const logoutUser = asyncHandler(async (req, res) => {});
 

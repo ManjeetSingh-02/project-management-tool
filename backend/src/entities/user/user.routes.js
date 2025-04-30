@@ -18,5 +18,6 @@ const router = Router();
 
 router.post("/register", userRegistrationValidator(), validate, registerUser);
 router.get("/verify-account/:token", verifyAccount);
+router.post("/login", userLoginValidator(), validate, loginUser);
 
 export default router;
