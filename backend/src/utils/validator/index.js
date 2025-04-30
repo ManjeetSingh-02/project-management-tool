@@ -2,7 +2,7 @@ import { validationResult } from "express-validator";
 import { APIError } from "../api/apiError.js";
 
 // function to check for any validation errors
-export const validate = async (req, _, next) => {
+export const validate = async (req, res, next) => {
   // check for any errors
   const errors = validationResult(req);
 
@@ -13,6 +13,6 @@ export const validate = async (req, _, next) => {
   const extractedErrors = [];
   errors.array().map(err => extractedErrors.push({ [err.path]: err.msg }));
 
-  // throw an APIError with the extracted errors
-  throw new APIError(402, "Invalid data from body", extractedErrors);
+  // return an APIError with the extracted errors
+  return res.status(422).json(new APIError(422, "Invalid data from body", extractedErrors));
 };
