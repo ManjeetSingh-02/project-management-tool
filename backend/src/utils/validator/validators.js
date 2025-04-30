@@ -30,6 +30,7 @@ export const userRegistrationValidator = () => {
       .withMessage(
         "password should contain one uppercase, one lowercase, one number and one special character and min length must be 8",
       ),
+    body("fullname").trim().notEmpty().withMessage("fullname is required"),
   ];
 };
 
