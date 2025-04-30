@@ -18,10 +18,10 @@ export const registerUser = asyncHandler(async (req, res) => {
   if (!newUser) throw new APIError(400, "Registration Error", "Error creating user");
 
   // generate email verification token
-  const { hashedToken, unHashedToken, tokenExpiry } = newUser.generateTemporaryToken();
+  const { token, tokenExpiry } = newUser.generateTemporaryToken();
 
   // store in db
-  newUser.emailVerificationToken = hashedToken;
+  newUser.emailVerificationToken = token;
   newUser.emailVerificationExpiry = tokenExpiry;
 
   // update user in db
@@ -31,7 +31,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   await sendMail({
     email: newUser.email,
     subject: "Verify your account - Project Management Tool",
-    mailGenContent: verificationMailContentGenerator(newUser.username, unHashedToken),
+    mailGenContent: verificationMailContentGenerator(newUser.username, token),
   });
 
   // success status to user
