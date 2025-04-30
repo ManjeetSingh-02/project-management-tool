@@ -2,7 +2,7 @@ import { validationResult } from "express-validator";
 import { APIError } from "../api/apiError.js";
 
 // function to check for any validation errors
-export const validate = (req, _, next) => {
+export const validate = async (req, _, next) => {
   // check for any errors
   const errors = validationResult(req);
 
