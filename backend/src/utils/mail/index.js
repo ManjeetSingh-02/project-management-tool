@@ -42,9 +42,7 @@ export async function sendMail({ email, subject, mailGenContent }) {
   });
 
   // try to send email, if error occurs, throw an APIError
-  try {
-    await transporter.sendMail(mailOptions);
-  } catch (error) {
-    throw new APIError(402, "Error in sending mail", error);
-  }
+  await transporter.sendMail(mailOptions).catch(error => {
+    throw new APIError(400, "Error in sending mail", error);
+  });
 }
