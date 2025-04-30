@@ -12,8 +12,8 @@ export async function sendMail({ email, subject, mailGenContent }) {
   const mailGenerator = new Mailgen({
     theme: "default",
     product: {
-      name: "Mega Project",
-      link: "https://mailgen.js/",
+      name: "Project Management Tool",
+      link: process.env.ORIGIN_URL,
     },
   });
 
@@ -33,8 +33,8 @@ export async function sendMail({ email, subject, mailGenContent }) {
   // create a transporter for sending emails
   const transporter = nodemailer.createTransport({
     host: process.env.MAILTRAP_HOST,
-    port: process.env.MAILTRAP_PORT,
-    secure: false,
+    port: Number(process.env.MAILTRAP_PORT),
+    secure: process.env.NODE_ENV === "production",
     auth: {
       user: process.env.MAILTRAP_USERNAME,
       pass: process.env.MAILTRAP_PASSWORD,
