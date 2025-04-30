@@ -9,7 +9,7 @@ import {
   registerUser,
   resendEmailVerification,
   resetForgottenPassword,
-  verifyEmail,
+  verifyAccount,
 } from "./user.controllers.js";
 import { validate } from "../../utils/validator/index.js";
 import { userRegistrationValidator, userLoginValidator } from "../../utils/validator/validators.js";
@@ -17,5 +17,6 @@ import { userRegistrationValidator, userLoginValidator } from "../../utils/valid
 const router = Router();
 
 router.post("/register", userRegistrationValidator(), validate, registerUser);
+router.get("/verify-account/:token", verifyAccount);
 
 export default router;

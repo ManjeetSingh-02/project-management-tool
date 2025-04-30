@@ -42,7 +42,34 @@ export const loginUser = asyncHandler(async (req, res) => {});
 
 export const logoutUser = asyncHandler(async (req, res) => {});
 
-export const verifyEmail = asyncHandler(async (req, res) => {});
+export const verifyAccount = asyncHandler(async (req, res) => {
+  // get token from params
+  const { token } = req.params;
+
+  // check if token is valid
+  const existingUser = await User.findOne({ emailVerificationToken: token });
+  if (!existingUser) throw new APIError(400, "Verification Error", "Invalid token");
+
+  // check if token is expired
+  const isTokenExpired = existingUser.emailVerificationExpiry < Date.now();
+  if (isTokenExpired)
+    throw new APIError(
+      400,
+      "Verification Error",
+      "Token expired, please resend the verification email",
+    );
+
+  // mark the user verified and remove the token and its expiry
+  existingUser.isEmailVerified = true;
+  existingUser.emailVerificationToken = undefined;
+  existingUser.emailVerificationExpiry = undefined;
+
+  // update user in db
+  await existingUser.save();
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Email verified successfully"));
+});
 
 export const resendEmailVerification = asyncHandler(async (req, res) => {});
 
