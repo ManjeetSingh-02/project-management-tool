@@ -1,6 +1,6 @@
 // class to standardize API responses
 export class APIResponse {
-  constructor(statusCode, data, message = "Success") {
+  constructor(statusCode, message = "Success", data = []) {
     this.statusCode = statusCode;
     this.data = data;
     this.message = message;
