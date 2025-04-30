@@ -9,7 +9,7 @@ export const verificationMailContentGenerator = (username, verificationToken) =>
         button: {
           color: "#1a73e8",
           text: "Verify your account",
-          link: `${process.env.ORIGIN_URL}/api/v1/users/verify/${verificationToken}`,
+          link: `${process.env.ORIGIN_URL}/api/v1/users/verify-account/${verificationToken}`,
         },
       },
     },
