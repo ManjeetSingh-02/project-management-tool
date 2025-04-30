@@ -20,8 +20,16 @@ export const userRegistrationValidator = () => {
     body("password")
       .notEmpty()
       .withMessage("password is required")
-      .isStrongPassword()
-      .withMessage("password is not strong enough, increase its length"),
+      .isStrongPassword({
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+      })
+      .withMessage(
+        "password should contain one uppercase, one lowercase, one number and one special character and min length must be 8",
+      ),
   ];
 };
 
