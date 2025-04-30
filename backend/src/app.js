@@ -8,6 +8,10 @@ import {
 } from "./entities/index.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+
+// file path for .env file
+dotenv.config({ path: "./.env" });
 
 // create new express app
 const app = express();
@@ -18,7 +22,7 @@ app.use(cookieParser());
 // middleware for CORS configuration
 app.use(
   cors({
-    origin: process.env.BASE_URL,
+    origin: process.env.ORIGIN_URL,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
