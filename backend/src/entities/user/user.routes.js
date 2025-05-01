@@ -17,6 +17,7 @@ import {
   userLoginValidator,
   emailValidator,
 } from "../../utils/validator/validators.js";
+import { isLoggedIn } from "../../utils/route-protector.js";
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.post("/login", userLoginValidator(), validate, loginUser);
 router.post("/resend-verification-email", emailValidator(), validate, resendEmailVerification);
 router.post("/forgot-password", emailValidator(), validate, forgotPasswordRequest);
 router.post("/reset-password/:token", resetForgottenPassword);
+router.get("/profile", isLoggedIn, getCurrentUser);
 
 export default router;

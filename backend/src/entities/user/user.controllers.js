@@ -215,6 +215,23 @@ export const resetForgottenPassword = asyncHandler(async (req, res) => {
 
 export const changeCurrentPassword = asyncHandler(async (req, res) => {});
 
-export const getCurrentUser = asyncHandler(async (req, res) => {});
+export const getCurrentUser = asyncHandler(async (req, res) => {
+  // get user from request
+  const { id } = req.user;
+
+  // get user from db
+  const existingUser = await User.findById(id);
+
+  // success status to user
+  return res.status(200).json(
+    new APIResponse(200, "User fetched successfully", {
+      id: existingUser._id,
+      username: existingUser.username,
+      email: existingUser.email,
+      fullname: existingUser.fullname,
+      avatar: existingUser.avatar,
+    }),
+  );
+});
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {});
