@@ -47,8 +47,8 @@ export const userLoginValidator = () => {
   ];
 };
 
-// function to check for any resend email verification validation errors
-export const resendMailValidator = () => {
+// function to check for email verification validation errors
+export const emailValidator = () => {
   return [
     body("email")
       .trim()
