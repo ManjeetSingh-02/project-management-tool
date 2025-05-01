@@ -51,8 +51,8 @@ export const loginUser = asyncHandler(async (req, res) => {
   if (!existingUser) throw new APIError(400, "Login Error", "User doesn't exist");
 
   // check if password is correct
-  if (!existingUser.isPasswordCorrect(password))
-    throw new APIError(400, "Login Error", "Invalid credentials");
+  const isPasswordCorrect = await existingUser.isPasswordCorrect(password);
+  if (!isPasswordCorrect) throw new APIError(400, "Login Error", "Invalid credentials");
 
   // check if user is verified
   if (!existingUser.isEmailVerified) throw new APIError(400, "Login Error", "Email not verified");
