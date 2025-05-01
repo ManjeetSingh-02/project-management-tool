@@ -46,3 +46,15 @@ export const userLoginValidator = () => {
     body("password").notEmpty().withMessage("password is required"),
   ];
 };
+
+// function to check for any resend email verification validation errors
+export const resendMailValidator = () => {
+  return [
+    body("email")
+      .trim()
+      .notEmpty()
+      .withMessage("email is required")
+      .isEmail()
+      .withMessage("invalid email"),
+  ];
+};

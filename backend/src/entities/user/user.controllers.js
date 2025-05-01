@@ -113,7 +113,38 @@ export const verifyAccount = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Email verified successfully"));
 });
 
-export const resendEmailVerification = asyncHandler(async (req, res) => {});
+export const resendEmailVerification = asyncHandler(async (req, res) => {
+  // get email
+  const { email } = req.body;
+
+  // check if user exists
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) throw new APIError(400, "Verification Error", "User doesn't exist");
+
+  // check if user is verified
+  if (existingUser.isEmailVerified)
+    throw new APIError(400, "Verification Error", "User already verified");
+
+  // generate new email verification token
+  const { token, tokenExpiry } = existingUser.generateTemporaryToken();
+
+  // store in db
+  existingUser.emailVerificationToken = token;
+  existingUser.emailVerificationExpiry = tokenExpiry;
+
+  // update user in db
+  await existingUser.save();
+
+  // send to user in email
+  await sendMail({
+    email: existingUser.email,
+    subject: "Verify your account - Project Management Tool",
+    mailGenContent: verificationMailContentGenerator(existingUser.username, token),
+  });
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Verification Mail sent successfully"));
+});
 
 export const forgotPasswordRequest = asyncHandler(async (req, res) => {});
 
