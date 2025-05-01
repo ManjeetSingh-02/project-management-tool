@@ -15,7 +15,7 @@ import { validate } from "../../utils/validator/index.js";
 import {
   userRegistrationValidator,
   userLoginValidator,
-  resendMailValidator,
+  emailValidator,
 } from "../../utils/validator/validators.js";
 
 const router = Router();
@@ -23,6 +23,7 @@ const router = Router();
 router.post("/register", userRegistrationValidator(), validate, registerUser);
 router.get("/verify-account/:token", verifyAccount);
 router.post("/login", userLoginValidator(), validate, loginUser);
-router.post("/resend-verification-email", resendMailValidator(), validate, resendEmailVerification);
+router.post("/resend-verification-email", emailValidator(), validate, resendEmailVerification);
+router.post("/forgot-password", emailValidator(), validate, forgotPasswordRequest);
 
 export default router;

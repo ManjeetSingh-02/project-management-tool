@@ -3,7 +3,10 @@ import { User } from "./user.models.js";
 import { APIError } from "../../utils/api/apiError.js";
 import { APIResponse } from "../../utils/api/apiResponse.js";
 import { sendMail } from "../../utils/mail/index.js";
-import { verificationMailContentGenerator } from "../../utils/mail/mailGenContent.js";
+import {
+  verificationMailContentGenerator,
+  forgotPasswordMailContentGenerator,
+} from "../../utils/mail/mailGenContent.js";
 import ms from "ms";
 
 export const registerUser = asyncHandler(async (req, res) => {
@@ -146,7 +149,34 @@ export const resendEmailVerification = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Verification Mail sent successfully"));
 });
 
-export const forgotPasswordRequest = asyncHandler(async (req, res) => {});
+export const forgotPasswordRequest = asyncHandler(async (req, res) => {
+  // get email
+  const { email } = req.body;
+
+  // check if user exists
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) throw new APIError(400, "Forgot Password Request Error", "User doesn't exist");
+
+  // generate new password reset token
+  const { token, tokenExpiry } = existingUser.generateTemporaryToken();
+
+  // store in db
+  existingUser.forgotPasswordToken = token;
+  existingUser.forgotPasswordExpiry = tokenExpiry;
+
+  // update user in db
+  await existingUser.save();
+
+  // send to user in email
+  await sendMail({
+    email: existingUser.email,
+    subject: "Reset Your Password - Project Management Tool",
+    mailGenContent: forgotPasswordMailContentGenerator(existingUser.username, token),
+  });
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Password reset mail sent successfully"));
+});
 
 export const resetForgottenPassword = asyncHandler(async (req, res) => {});
 
