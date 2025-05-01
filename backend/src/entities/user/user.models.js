@@ -84,7 +84,7 @@ userSchema.methods.generateRefreshToken = function () {
 
 userSchema.methods.generateTemporaryToken = function () {
   const token = crypto.randomBytes(32).toString("hex");
-  const tokenExpiry = Date.now() + 20 * 60 * 100;
+  const tokenExpiry = Date.now() + 5 * 60 * 1000;
 
   return { token, tokenExpiry };
 };
