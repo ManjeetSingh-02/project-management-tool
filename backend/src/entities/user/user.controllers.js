@@ -57,13 +57,6 @@ export const loginUser = asyncHandler(async (req, res) => {
   // generate access token
   const accessToken = existingUser.generateAccessToken();
 
-  // save accessToken into cookies
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
-  });
-
   // generate refresh token
   const refreshToken = existingUser.generateRefreshToken();
 
@@ -73,8 +66,20 @@ export const loginUser = asyncHandler(async (req, res) => {
   // update user in db
   await existingUser.save();
 
-  // success status to user
-  return res.status(200).json(new APIResponse(200, "Login Successful"));
+  // success status to user, save accessToken and refreshToken into cookies
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
+    })
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: ms(process.env.REFRESH_TOKEN_EXPIRY),
+    })
+    .json(new APIResponse(200, "Login Successful"));
 });
 
 export const logoutUser = asyncHandler(async (req, res) => {});
