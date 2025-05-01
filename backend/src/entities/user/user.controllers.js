@@ -178,7 +178,40 @@ export const forgotPasswordRequest = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Password reset mail sent successfully"));
 });
 
-export const resetForgottenPassword = asyncHandler(async (req, res) => {});
+export const resetForgottenPassword = asyncHandler(async (req, res) => {
+  // get token from params
+  const { token } = req.params;
+
+  // get new password
+  const { password } = req.body;
+
+  // check if token is valid
+  const existingUser = await User.findOne({ forgotPasswordToken: token });
+  if (!existingUser) throw new APIError(400, "Reset Password Error", "Invalid token");
+
+  // check if token is expired
+  const isTokenExpired = existingUser.forgotPasswordExpiry < Date.now();
+  if (isTokenExpired)
+    throw new APIError(400, "Reset Password Error", "Token expired, please request again");
+
+  // check if password is same as old password
+  const isSamePassword = await existingUser.isPasswordCorrect(password);
+  if (isSamePassword)
+    throw new APIError(400, "Reset Password Error", "New password cannot be same as old password");
+
+  // update password
+  existingUser.password = password;
+
+  // remove the token and its expiry
+  existingUser.forgotPasswordToken = undefined;
+  existingUser.forgotPasswordExpiry = undefined;
+
+  // update user in db
+  await existingUser.save();
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Password reset successfully"));
+});
 
 export const changeCurrentPassword = asyncHandler(async (req, res) => {});
 

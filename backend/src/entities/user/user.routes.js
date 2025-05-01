@@ -25,5 +25,6 @@ router.get("/verify-account/:token", verifyAccount);
 router.post("/login", userLoginValidator(), validate, loginUser);
 router.post("/resend-verification-email", emailValidator(), validate, resendEmailVerification);
 router.post("/forgot-password", emailValidator(), validate, forgotPasswordRequest);
+router.post("/reset-password/:token", resetForgottenPassword);
 
 export default router;
