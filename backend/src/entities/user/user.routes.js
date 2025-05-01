@@ -28,5 +28,6 @@ router.post("/resend-verification-email", emailValidator(), validate, resendEmai
 router.post("/forgot-password", emailValidator(), validate, forgotPasswordRequest);
 router.post("/reset-password/:token", resetForgottenPassword);
 router.get("/profile", isLoggedIn, getCurrentUser);
+router.get("/logout", isLoggedIn, logoutUser);
 
 export default router;

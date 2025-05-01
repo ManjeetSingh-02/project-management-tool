@@ -85,7 +85,27 @@ export const loginUser = asyncHandler(async (req, res) => {
     .json(new APIResponse(200, "Login Successful"));
 });
 
-export const logoutUser = asyncHandler(async (req, res) => {});
+export const logoutUser = asyncHandler(async (req, res) => {
+  // get user from request
+  const { id } = req.user;
+
+  // get user from db
+  const existingUser = await User.findById(id);
+  if (!existingUser) throw new APIError(400, "Logout Error", "User doesn't exist");
+
+  // remove refresh token from db
+  existingUser.refreshToken = undefined;
+
+  // update user in db
+  await existingUser.save({ validateBeforeSave: false });
+
+  // success status to user, clear cookies
+  return res
+    .status(200)
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .json(new APIResponse(200, "Logout Successful"));
+});
 
 export const verifyAccount = asyncHandler(async (req, res) => {
   // get token from params
