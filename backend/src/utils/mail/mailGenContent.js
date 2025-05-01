@@ -12,6 +12,7 @@ export const verificationMailContentGenerator = (username, verificationToken) =>
           link: `${process.env.ORIGIN_URL}/api/v1/users/verify-account/${verificationToken}`,
         },
       },
+      outro: "This link is only valid for 5 mins.",
     },
   };
 };
@@ -30,6 +31,7 @@ export const forgotPasswordMailContentGenerator = (username, resetPasswordToken)
           link: `${process.env.ORIGIN_URL}/api/v1/users/reset-password/${resetPasswordToken}`,
         },
       },
+      outro: "This link is only valid for 5 mins.",
     },
   };
 };
