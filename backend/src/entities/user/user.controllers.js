@@ -67,7 +67,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   existingUser.refreshToken = refreshToken;
 
   // update user in db
-  await existingUser.save();
+  await existingUser.save({ validateBeforeSave: false });
 
   // success status to user, save accessToken and refreshToken into cookies
   return res
