@@ -30,6 +30,7 @@ router.post("/forgot-password", emailValidator(), validate, forgotPasswordReques
 router.post("/reset-password/:token", passwordValidator(), validate, resetForgottenPassword);
 router.post("/change-password", isLoggedIn, passwordValidator(), validate, changeCurrentPassword);
 router.get("/profile", isLoggedIn, getCurrentUser);
+router.get("/refresh-access-token", refreshAccessToken);
 router.get("/logout", isLoggedIn, logoutUser);
 
 export default router;

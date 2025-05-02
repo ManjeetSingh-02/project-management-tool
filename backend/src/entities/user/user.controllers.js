@@ -8,6 +8,7 @@ import {
   forgotPasswordMailContentGenerator,
 } from "../../utils/mail/mailGenContent.js";
 import ms from "ms";
+import jwt from "jsonwebtoken";
 
 export const registerUser = asyncHandler(async (req, res) => {
   // get data
@@ -285,4 +286,48 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
   );
 });
 
-export const refreshAccessToken = asyncHandler(async (req, res) => {});
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  // get refresh token from cookies
+  const { refreshToken } = req.cookies;
+  if (!refreshToken) throw new APIError(400, "Authentication Error", "Unauthorized");
+
+  // decode refresh token
+  const decodedToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+  // check if user exists
+  const existingUser = await User.findById(decodedToken?.id);
+  if (!existingUser) throw new APIError(400, "Authentication Error", "Invalid Refresh Token");
+
+  // check if refresh token is valid
+  if (existingUser.refreshToken !== refreshToken)
+    throw new APIError(400, "Authentication Error", "Invalid Refresh Token");
+
+  // generate access token
+  const accessToken = existingUser.generateAccessToken();
+
+  // generate refresh token
+  const newRefreshToken = existingUser.generateRefreshToken();
+
+  // store refresh token in db
+  existingUser.refreshToken = newRefreshToken;
+
+  // update user in db
+  await existingUser.save({ validateBeforeSave: false });
+
+  // success status to user, save accessToken and refreshToken into cookies
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
+    })
+    .cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: ms(process.env.REFRESH_TOKEN_EXPIRY),
+    })
+    .json(
+      new APIResponse(200, "Access Token refreshed successfully", { accessToken, newRefreshToken }),
+    );
+});
