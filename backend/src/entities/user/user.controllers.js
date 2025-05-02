@@ -203,7 +203,7 @@ export const resetForgottenPassword = asyncHandler(async (req, res) => {
   const { token } = req.params;
 
   // get new password
-  const { password } = req.body;
+  const { newPassword } = req.body;
 
   // check if token is valid
   const existingUser = await User.findOne({ forgotPasswordToken: token });
@@ -215,12 +215,12 @@ export const resetForgottenPassword = asyncHandler(async (req, res) => {
     throw new APIError(400, "Reset Password Error", "Token expired, please request again");
 
   // check if password is same as old password
-  const isSamePassword = await existingUser.isPasswordCorrect(password);
+  const isSamePassword = await existingUser.isPasswordCorrect(newPassword);
   if (isSamePassword)
     throw new APIError(400, "Reset Password Error", "New password cannot be same as old password");
 
   // update password
-  existingUser.password = password;
+  existingUser.password = newPassword;
 
   // remove the token and its expiry
   existingUser.forgotPasswordToken = undefined;

@@ -16,6 +16,7 @@ import {
   userRegistrationValidator,
   userLoginValidator,
   emailValidator,
+  passwordValidator,
 } from "../../utils/validator/validators.js";
 import { isLoggedIn } from "../../utils/route-protector.js";
 
@@ -26,7 +27,7 @@ router.get("/verify-account/:token", verifyAccount);
 router.post("/login", userLoginValidator(), validate, loginUser);
 router.post("/resend-verification-email", emailValidator(), validate, resendEmailVerification);
 router.post("/forgot-password", emailValidator(), validate, forgotPasswordRequest);
-router.post("/reset-password/:token", resetForgottenPassword);
+router.post("/reset-password/:token", passwordValidator(), validate, resetForgottenPassword);
 router.get("/profile", isLoggedIn, getCurrentUser);
 router.get("/logout", isLoggedIn, logoutUser);
 
