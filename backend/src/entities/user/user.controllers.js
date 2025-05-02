@@ -233,7 +233,38 @@ export const resetForgottenPassword = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Password reset successfully"));
 });
 
-export const changeCurrentPassword = asyncHandler(async (req, res) => {});
+export const changeCurrentPassword = asyncHandler(async (req, res) => {
+  // get user from request
+  const { id } = req.user;
+
+  // check if user exists
+  const existingUser = await User.findById(id);
+  if (!existingUser) throw new APIError(400, "Change Password Error", "User doesn't exist");
+
+  // get old password and new password
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword)
+    throw new APIError(400, "Change Password Error", "Please provide both old and new password");
+
+  // check if old password is correct
+  const isOldPasswordCorrect = await existingUser.isPasswordCorrect(oldPassword);
+  if (!isOldPasswordCorrect)
+    throw new APIError(400, "Change Password Error", "Old password is incorrect");
+
+  // check if new password is same as old password
+  const isSamePassword = await existingUser.isPasswordCorrect(newPassword);
+  if (isSamePassword)
+    throw new APIError(400, "Change Password Error", "New password cannot be same as old password");
+
+  // update password
+  existingUser.password = newPassword;
+
+  // update user in db
+  await existingUser.save();
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Password changed successfully"));
+});
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
   // get user from request

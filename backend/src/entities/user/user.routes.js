@@ -28,6 +28,7 @@ router.post("/login", userLoginValidator(), validate, loginUser);
 router.post("/resend-verification-email", emailValidator(), validate, resendEmailVerification);
 router.post("/forgot-password", emailValidator(), validate, forgotPasswordRequest);
 router.post("/reset-password/:token", passwordValidator(), validate, resetForgottenPassword);
+router.post("/change-password", isLoggedIn, passwordValidator(), validate, changeCurrentPassword);
 router.get("/profile", isLoggedIn, getCurrentUser);
 router.get("/logout", isLoggedIn, logoutUser);
 
