@@ -58,3 +58,22 @@ export const emailValidator = () => {
       .withMessage("invalid email"),
   ];
 };
+
+// function to check for password validation errors
+export const passwordValidator = () => {
+  return [
+    body("newPassword")
+      .notEmpty()
+      .withMessage("new password is required")
+      .isStrongPassword({
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+      })
+      .withMessage(
+        "new password should contain one uppercase, one lowercase, one number and one special character and min length must be 8",
+      ),
+  ];
+};
