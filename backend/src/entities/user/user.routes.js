@@ -23,14 +23,14 @@ import { isLoggedIn } from "../../utils/route-protector.js";
 const router = Router();
 
 router.post("/register", userRegistrationValidator(), validate, registerUser);
-router.get("/verify-account/:token", verifyAccount);
+router.patch("/verify-account/:token", verifyAccount);
 router.post("/login", userLoginValidator(), validate, loginUser);
 router.post("/resend-verification-email", emailValidator(), validate, resendEmailVerification);
 router.post("/forgot-password", emailValidator(), validate, forgotPasswordRequest);
 router.post("/reset-password/:token", passwordValidator(), validate, resetForgottenPassword);
-router.post("/change-password", isLoggedIn, passwordValidator(), validate, changeCurrentPassword);
+router.patch("/change-password", isLoggedIn, passwordValidator(), validate, changeCurrentPassword);
 router.get("/profile", isLoggedIn, getCurrentUser);
-router.get("/refresh-access-token", refreshAccessToken);
-router.get("/logout", isLoggedIn, logoutUser);
+router.post("/refresh-access-token", refreshAccessToken);
+router.post("/logout", isLoggedIn, logoutUser);
 
 export default router;
