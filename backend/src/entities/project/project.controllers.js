@@ -46,7 +46,31 @@ export const createProject = asyncHandler(async (req, res) => {
   return res.status(201).json(new APIResponse(201, "Project created successfully"));
 });
 
-export const updateProject = async (req, res) => {};
+export const updateProject = asyncHandler(async (req, res) => {
+  // get id from params
+  const { id } = req.params;
+
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id }).select(
+    "-createdAt -updatedAt -createdBy -__v",
+  );
+  if (!existingProject) throw new APIError(400, "Update Project Error", "Project not found");
+
+  // get data
+  const { name, description } = req.body;
+
+  // update project data
+  existingProject.name = name;
+  existingProject.description = description;
+
+  // update project in db
+  await existingProject.save();
+
+  // success status to user
+  return res
+    .status(200)
+    .json(new APIResponse(200, "Project updated successfully", existingProject));
+});
 
 export const deleteProject = async (req, res) => {};
 
