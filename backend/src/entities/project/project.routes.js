@@ -4,6 +4,7 @@ import {
   getProjects,
   getProjectById,
   updateProject,
+  deleteProject,
 } from "./project.controllers.js";
 import { projectCreationValidator } from "../../utils/validator/projectValidators.js";
 import { validate } from "../../utils/validator/index.js";
@@ -15,5 +16,6 @@ router.post("/create", isLoggedIn, projectCreationValidator(), validate, createP
 router.get("/getprojects", isLoggedIn, getProjects);
 router.get("/getprojects/:id", isLoggedIn, getProjectById);
 router.patch("/update/:id", isLoggedIn, projectCreationValidator(), validate, updateProject);
+router.delete("/delete/:id", isLoggedIn, deleteProject);
 
 export default router;

@@ -72,7 +72,20 @@ export const updateProject = asyncHandler(async (req, res) => {
     .json(new APIResponse(200, "Project updated successfully", existingProject));
 });
 
-export const deleteProject = async (req, res) => {};
+export const deleteProject = asyncHandler(async (req, res) => {
+  // get id from params
+  const { id } = req.params;
+
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  if (!existingProject) throw new APIError(400, "Delete Project Error", "Project not found");
+
+  // delete project from db
+  await existingProject.deleteOne();
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Project deleted successfully"));
+});
 
 export const getProjectMembers = async (req, res) => {};
 
