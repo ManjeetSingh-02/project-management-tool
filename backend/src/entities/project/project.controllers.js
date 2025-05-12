@@ -3,7 +3,16 @@ import { Project } from "./project.models.js";
 import { APIError } from "../../utils/api/apiError.js";
 import { APIResponse } from "../../utils/api/apiResponse.js";
 
-export const getProjects = async (req, res) => {};
+export const getProjects = asyncHandler(async (req, res) => {
+  // get all projects
+  const allProjects = await Project.find({ createdBy: req.user.id }).select(
+    "-createdAt -updatedAt -createdBy -__v",
+  );
+  if (!allProjects) throw new APIError(400, "Get All Projects Error", "No projects found");
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Projects fetched successfully", allProjects));
+});
 
 export const getProjectById = async (req, res) => {};
 
