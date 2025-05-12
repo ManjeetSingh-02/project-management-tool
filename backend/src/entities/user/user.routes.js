@@ -17,7 +17,7 @@ import {
   userLoginValidator,
   emailValidator,
   passwordValidator,
-} from "../../utils/validator/validators.js";
+} from "../../utils/validator/userValidators.js";
 import { isLoggedIn } from "../../utils/route-protector.js";
 
 const router = Router();
