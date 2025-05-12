@@ -14,7 +14,21 @@ export const getProjects = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Projects fetched successfully", allProjects));
 });
 
-export const getProjectById = async (req, res) => {};
+export const getProjectById = asyncHandler(async (req, res) => {
+  // get id from params
+  const { id } = req.params;
+
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id }).select(
+    "-createdAt -updatedAt -createdBy -__v",
+  );
+  if (!existingProject) throw new APIError(400, "Get Project Error", "Project not found");
+
+  // success status to user
+  return res
+    .status(200)
+    .json(new APIResponse(200, "Project fetched successfully", existingProject));
+});
 
 export const createProject = asyncHandler(async (req, res) => {
   // get data
