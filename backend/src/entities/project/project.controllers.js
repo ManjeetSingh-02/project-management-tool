@@ -4,6 +4,7 @@ import { APIError } from "../../utils/api/apiError.js";
 import { APIResponse } from "../../utils/api/apiResponse.js";
 import { ProjectMember } from "./projectmember.models.js";
 import { UserRolesEnum } from "../../utils/constants.js";
+import { User } from "../user/user.models.js";
 
 export const getProjects = asyncHandler(async (req, res) => {
   // get all projects
@@ -120,7 +121,40 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
     .json(new APIResponse(200, "Project members fetched successfully", projectMembers));
 });
 
-export const addMemberToProject = async (req, res) => {};
+export const addMemberToProject = asyncHandler(async (req, res) => {
+  // get id from params
+  const { id } = req.params;
+
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  if (!existingProject) throw new APIError(400, "Add Member to Project Error", "Project not found");
+
+  // get data
+  const { memberId, role } = req.body;
+
+  // check if user exists
+  const existingUser = await User.findById(memberId);
+  if (!existingUser) throw new APIError(400, "Add Member to Project Error", "User not found");
+
+  // check if user is already a member of the project
+  const existingMember = await ProjectMember.findOne({ user: memberId, project: id });
+  if (existingMember)
+    throw new APIError(400, "Add Member to Project Error", "Member already exists in project");
+
+  // create new project member in db
+  const newProjectMember = await ProjectMember.create({
+    user: memberId,
+    project: id,
+    role,
+  });
+  if (!newProjectMember)
+    throw new APIError(400, "Add Member to Project Error", "New project member addition failed");
+
+  // success status to user
+  return res
+    .status(201)
+    .json(new APIResponse(201, "Project member added successfully", newProjectMember));
+});
 
 export const deleteMemberFromProject = async (req, res) => {};
 
