@@ -2,6 +2,8 @@ import { asyncHandler } from "../../utils/async-handler.js";
 import { Project } from "./project.models.js";
 import { APIError } from "../../utils/api/apiError.js";
 import { APIResponse } from "../../utils/api/apiResponse.js";
+import { ProjectMember } from "./projectmember.models.js";
+import { UserRolesEnum } from "../../utils/constants.js";
 
 export const getProjects = asyncHandler(async (req, res) => {
   // get all projects
@@ -41,6 +43,15 @@ export const createProject = asyncHandler(async (req, res) => {
   // create new project in db
   const newProject = await Project.create({ name, description, createdBy: req.user.id });
   if (!newProject) throw new APIError(400, "Project Creation Error", "Project creation failed");
+
+  // create project member in db
+  const defaultProjectMember = await ProjectMember.create({
+    user: req.user.id,
+    project: newProject._id,
+    role: UserRolesEnum.ADMIN,
+  });
+  if (!defaultProjectMember)
+    throw new APIError(400, "Project Creation Error", "Project default member creation failed");
 
   // success status to user
   return res.status(201).json(new APIResponse(201, "Project created successfully"));
@@ -87,7 +98,23 @@ export const deleteProject = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Project deleted successfully"));
 });
 
-export const getProjectMembers = async (req, res) => {};
+export const getProjectMembers = asyncHandler(async (req, res) => {
+  // get id from params
+  const { id } = req.params;
+
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  if (!existingProject) throw new APIError(400, "Get Project Members Error", "Project not found");
+
+  // get project members
+  const projectMembers = await ProjectMember.find({ project: id });
+  if (!projectMembers) throw new APIError(400, "Get Project Members Error", "No members found");
+
+  // success status to user
+  return res
+    .status(200)
+    .json(new APIResponse(200, "Project members fetched successfully", projectMembers));
+});
 
 export const addMemberToProject = async (req, res) => {};
 
