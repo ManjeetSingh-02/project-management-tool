@@ -156,7 +156,28 @@ export const addMemberToProject = asyncHandler(async (req, res) => {
     .json(new APIResponse(201, "Project member added successfully", newProjectMember));
 });
 
-export const deleteMemberFromProject = async (req, res) => {};
+export const deleteMemberFromProject = asyncHandler(async (req, res) => {
+  // get id and memberId from params
+  const { id, memberId } = req.params;
+
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
+
+  // check if project member exists
+  const existingProjectMember = await ProjectMember.findOne({
+    project: id,
+    user: memberId,
+  });
+  if (!existingProjectMember)
+    throw new APIError(400, "Update Member Role Error", "Project member not found");
+
+  // delete project member from db
+  await existingProjectMember.deleteOne();
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Project member deleted successfully"));
+});
 
 export const updateMemberRole = asyncHandler(async (req, res) => {
   // get id and memberId from params
