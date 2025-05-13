@@ -94,6 +94,10 @@ export const deleteProject = asyncHandler(async (req, res) => {
   // delete project from db
   await existingProject.deleteOne();
 
+  // delete project members from db
+  const projectMembers = await ProjectMember.find({ project: id });
+  projectMembers.forEach(async member => await member.deleteOne());
+
   // success status to user
   return res.status(200).json(new APIResponse(200, "Project deleted successfully"));
 });
