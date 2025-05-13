@@ -9,7 +9,7 @@ export const verificationMailContentGenerator = (username, verificationToken) =>
         button: {
           color: "#1a73e8",
           text: "Verify your account",
-          link: `${process.env.ORIGIN_URL}/api/v1/users/verify-account/${verificationToken}`,
+          link: `${process.env.ORIGIN_URL}/verify-account/${verificationToken}`,
         },
       },
       outro: "This link is only valid for 5 mins.",
@@ -28,7 +28,7 @@ export const forgotPasswordMailContentGenerator = (username, resetPasswordToken)
         button: {
           color: "#0F9D58",
           text: "Reset your password",
-          link: `${process.env.ORIGIN_URL}/api/v1/users/reset-password/${resetPasswordToken}`,
+          link: `${process.env.ORIGIN_URL}/reset-password/${resetPasswordToken}`,
         },
       },
       outro: "This link is only valid for 5 mins.",
