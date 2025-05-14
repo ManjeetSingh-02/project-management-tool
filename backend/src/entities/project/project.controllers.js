@@ -8,25 +8,10 @@ import { User } from "../user/user.models.js";
 
 export const getProjects = asyncHandler(async (req, res) => {
   // get all projects in which the user is assigned
-  const allUserProjects = await ProjectMember.find({ user: req.user.id }).select("project role");
-  if (!allUserProjects.length)
-    throw new APIError(400, "Get All Projects Error", "No projects found");
-
-  // get all projects details
-  const allProjects = await Promise.all(
-    allUserProjects.map(async userProject => {
-      // get project details
-      const project = await Project.findById(userProject.project).select(
-        "-createdAt -updatedAt -createdBy -__v",
-      );
-
-      // return project details with user role
-      return {
-        ...project._doc,
-        role: userProject.role,
-      };
-    }),
-  );
+  const allProjects = await ProjectMember.find({ user: req.user.id })
+    .select("project role")
+    .populate("project", "_id name description createdBy");
+  if (!allProjects.length) throw new APIError(400, "Get All Projects Error", "No projects found");
 
   // success status to user
   return res.status(200).json(new APIResponse(200, "Projects fetched successfully", allProjects));
@@ -78,43 +63,31 @@ export const updateProject = asyncHandler(async (req, res) => {
   // get id from params
   const { id } = req.params;
 
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: id }).select("-createdAt -updatedAt -__v");
-  if (!existingProject) throw new APIError(400, "Update Project Error", "Project not found");
-
   // get data
   const { name, description } = req.body;
 
-  // update project data
-  existingProject.name = name;
-  existingProject.description = description;
-
-  // update project in db
-  await existingProject.save();
+  // update project details in db
+  const updatedProject = await Project.findByIdAndUpdate(
+    id,
+    { name, description },
+    { new: true },
+  ).select("-createdAt -updatedAt -__v");
+  if (!updatedProject)
+    throw new APIError(400, "Update Project Error", "Project details updation failed");
 
   // success status to user
-  return res.status(200).json(
-    new APIResponse(200, "Project updated successfully", {
-      ...existingProject._doc,
-      role: req.user.role,
-    }),
-  );
+  return res.status(200).json(new APIResponse(200, "Project updated successfully", updatedProject));
 });
 
 export const deleteProject = asyncHandler(async (req, res) => {
   // get id from params
   const { id } = req.params;
 
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
-  if (!existingProject) throw new APIError(400, "Delete Project Error", "Project not found");
+  // delete projectmembers from db
+  await ProjectMember.deleteMany({ project: id });
 
   // delete project from db
-  await existingProject.deleteOne();
-
-  // delete project members from db
-  const projectMembers = await ProjectMember.find({ project: id });
-  projectMembers.forEach(async member => await member.deleteOne());
+  await Project.findOneAndDelete({ _id: id, createdBy: req.user.id });
 
   // success status to user
   return res.status(200).json(new APIResponse(200, "Project deleted successfully"));
@@ -124,13 +97,8 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
   // get id from params
   const { id } = req.params;
 
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: id });
-  if (!existingProject) throw new APIError(400, "Get Project Members Error", "Project not found");
-
   // get project members
-  const projectMembers = await ProjectMember.find({ project: id });
-  if (!projectMembers) throw new APIError(400, "Get Project Members Error", "No members found");
+  const projectMembers = await ProjectMember.find({ project: id }).select("_id user project role");
 
   // success status to user
   return res
@@ -141,10 +109,6 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
 export const addMemberToProject = asyncHandler(async (req, res) => {
   // get id from params
   const { id } = req.params;
-
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: id });
-  if (!existingProject) throw new APIError(400, "Add Member to Project Error", "Project not found");
 
   // get data
   const { memberId, role } = req.body;
@@ -177,10 +141,6 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
   // get id and memberId from params
   const { id, memberId } = req.params;
 
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: id });
-  if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
-
   // check if project member exists
   const existingProjectMember = await ProjectMember.findOne({
     project: id,
@@ -210,10 +170,6 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
 export const updateMemberRole = asyncHandler(async (req, res) => {
   // get id and memberId from params
   const { id, memberId } = req.params;
-
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: id });
-  if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
 
   // check if project member exists
   const existingProjectMember = await ProjectMember.findOne({
