@@ -35,7 +35,7 @@ export const hasRolePermission = (roles = []) =>
 
     // check if project member exists
     const existingMember = await ProjectMember.findOne({ user: req.user.id, project: id });
-    if (!existingMember) throw new APIError(400, "Security Error", "Access Denied");
+    if (!existingMember) throw new APIError(400, "Security Error", "Invalid Project Id");
 
     // check if user has permission
     if (!roles.includes(existingMember.role))
