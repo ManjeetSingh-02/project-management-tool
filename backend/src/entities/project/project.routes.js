@@ -18,23 +18,54 @@ import {
   projectMemberRoleValidator,
 } from "../../utils/validator/projectValidators.js";
 import { validate } from "../../utils/validator/index.js";
-import { isLoggedIn } from "../../utils/route-protector.js";
+import { isLoggedIn, hasRolePermission } from "../../utils/route-protector.js";
+import { UserRolesEnum } from "../../utils/constants.js";
 
 const router = Router();
 
 router.get("/", isLoggedIn, getProjects);
-router.get("/:id", isLoggedIn, projectIdValidator(), validate, getProjectById);
+router.get(
+  "/:id",
+  isLoggedIn,
+  projectIdValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
+  getProjectById,
+);
 router.post("/", isLoggedIn, projectValidator(), validate, createProject);
-router.patch("/:id", isLoggedIn, projectIdValidator(), projectValidator(), validate, updateProject);
-router.delete("/:id", isLoggedIn, projectIdValidator(), validate, deleteProject);
+router.patch(
+  "/:id",
+  isLoggedIn,
+  projectIdValidator(),
+  projectValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  updateProject,
+);
+router.delete(
+  "/:id",
+  isLoggedIn,
+  projectIdValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN]),
+  deleteProject,
+);
 
-router.get("/:id/members", isLoggedIn, projectIdValidator(), validate, getProjectMembers);
+router.get(
+  "/:id/members",
+  isLoggedIn,
+  projectIdValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  getProjectMembers,
+);
 router.post(
   "/:id/members",
   isLoggedIn,
   projectIdValidator(),
   projectMemberValidator(),
   validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
   addMemberToProject,
 );
 router.patch(
@@ -44,6 +75,7 @@ router.patch(
   projectMemberIdValidator(),
   projectMemberRoleValidator(),
   validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
   updateMemberRole,
 );
 router.delete(
@@ -52,6 +84,7 @@ router.delete(
   projectIdValidator(),
   projectMemberIdValidator(),
   validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
   deleteMemberFromProject,
 );
 

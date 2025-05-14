@@ -7,11 +7,26 @@ import { UserRolesEnum } from "../../utils/constants.js";
 import { User } from "../user/user.models.js";
 
 export const getProjects = asyncHandler(async (req, res) => {
-  // get all projects
-  const allProjects = await Project.find({ createdBy: req.user.id }).select(
-    "-createdAt -updatedAt -createdBy -__v",
+  // get all projects in which the user is assigned
+  const allUserProjects = await ProjectMember.find({ user: req.user.id }).select("project role");
+  if (!allUserProjects.length)
+    throw new APIError(400, "Get All Projects Error", "No projects found");
+
+  // get all projects details
+  const allProjects = await Promise.all(
+    allUserProjects.map(async userProject => {
+      // get project details
+      const project = await Project.findById(userProject.project).select(
+        "-createdAt -updatedAt -createdBy -__v",
+      );
+
+      // return project details with user role
+      return {
+        ...project._doc,
+        role: userProject.role,
+      };
+    }),
   );
-  if (!allProjects) throw new APIError(400, "Get All Projects Error", "No projects found");
 
   // success status to user
   return res.status(200).json(new APIResponse(200, "Projects fetched successfully", allProjects));
@@ -22,15 +37,16 @@ export const getProjectById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id }).select(
-    "-createdAt -updatedAt -createdBy -__v",
-  );
+  const existingProject = await Project.findOne({ _id: id }).select("-createdAt -updatedAt -__v");
   if (!existingProject) throw new APIError(400, "Get Project Error", "Project not found");
 
   // success status to user
-  return res
-    .status(200)
-    .json(new APIResponse(200, "Project fetched successfully", existingProject));
+  return res.status(200).json(
+    new APIResponse(200, "Project fetched successfully", {
+      ...existingProject._doc,
+      role: req.user.role,
+    }),
+  );
 });
 
 export const createProject = asyncHandler(async (req, res) => {
@@ -63,9 +79,7 @@ export const updateProject = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id }).select(
-    "-createdAt -updatedAt -createdBy -__v",
-  );
+  const existingProject = await Project.findOne({ _id: id }).select("-createdAt -updatedAt -__v");
   if (!existingProject) throw new APIError(400, "Update Project Error", "Project not found");
 
   // get data
@@ -79,9 +93,12 @@ export const updateProject = asyncHandler(async (req, res) => {
   await existingProject.save();
 
   // success status to user
-  return res
-    .status(200)
-    .json(new APIResponse(200, "Project updated successfully", existingProject));
+  return res.status(200).json(
+    new APIResponse(200, "Project updated successfully", {
+      ...existingProject._doc,
+      role: req.user.role,
+    }),
+  );
 });
 
 export const deleteProject = asyncHandler(async (req, res) => {
@@ -108,7 +125,7 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  const existingProject = await Project.findOne({ _id: id });
   if (!existingProject) throw new APIError(400, "Get Project Members Error", "Project not found");
 
   // get project members
@@ -126,7 +143,7 @@ export const addMemberToProject = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  const existingProject = await Project.findOne({ _id: id });
   if (!existingProject) throw new APIError(400, "Add Member to Project Error", "Project not found");
 
   // get data
@@ -161,7 +178,7 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
   const { id, memberId } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  const existingProject = await Project.findOne({ _id: id });
   if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
 
   // check if project member exists
@@ -171,6 +188,17 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
   });
   if (!existingProjectMember)
     throw new APIError(400, "Update Member Role Error", "Project member not found");
+
+  // check if someone is trying to delete the creator
+  if (existingProject.createdBy.toString() === memberId)
+    throw new APIError(400, "Delete Member Error", "Cannot delete project creator");
+
+  // check if user is admin of the project and trying to delete other admin (leave project)
+  if (
+    existingProjectMember.role === UserRolesEnum.PROJECT_ADMIN &&
+    existingProjectMember.user.toString() !== req.user.id.toString()
+  )
+    throw new APIError(400, "Delete Member Error", "Cannot delete a project admin");
 
   // delete project member from db
   await existingProjectMember.deleteOne();
@@ -184,7 +212,7 @@ export const updateMemberRole = asyncHandler(async (req, res) => {
   const { id, memberId } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id, createdBy: req.user.id });
+  const existingProject = await Project.findOne({ _id: id });
   if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
 
   // check if project member exists
@@ -197,6 +225,29 @@ export const updateMemberRole = asyncHandler(async (req, res) => {
 
   // get data
   const { role } = req.body;
+
+  // check if user is trying to update their own role
+  if (existingProjectMember.user.toString() === req.user.id.toString())
+    throw new APIError(400, "Update Member Role Error", "Cannot update your own role");
+
+  // check if user is trying to update the creator's role
+  if (existingProject.createdBy.toString() === memberId)
+    throw new APIError(400, "Update Member Role Error", "Cannot update project creator's role");
+
+  // check if a project_admin user is trying to update other project_admin's role
+  if (
+    req.user.role === UserRolesEnum.PROJECT_ADMIN &&
+    existingProjectMember.role === UserRolesEnum.PROJECT_ADMIN
+  )
+    throw new APIError(
+      400,
+      "Update Member Role Error",
+      "Only admin can update other project_admin's role",
+    );
+
+  // check if role is same as existing role
+  if (existingProjectMember.role === role)
+    throw new APIError(400, "Update Member Role Error", "Project member already has this role");
 
   // update project member role
   existingProjectMember.role = role;
