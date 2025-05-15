@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { validate } from "../../utils/validator/index.js";
-import { isLoggedIn, hasRolePermission } from "../../utils/route-protector.js";
+import {
+  isLoggedIn,
+  hasRequiredRole,
+  hasRequiredAccess,
+  addUserRoleToReqObj,
+} from "../../utils/route-protector.js";
 import { UserRolesEnum } from "../../utils/constants.js";
 
 // project validators
@@ -50,118 +55,128 @@ const router = Router();
 // Project routes
 router.get("/", isLoggedIn, getProjects);
 router.get(
-  "/:id",
+  "/:projectId",
   isLoggedIn,
   projectIdValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getProjectById,
 );
 router.post("/", isLoggedIn, projectValidator(), validate, createProject);
 router.patch(
-  "/:id",
+  "/:projectId",
   isLoggedIn,
   projectIdValidator(),
   projectValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  hasRequiredRole([UserRolesEnum.ADMIN]),
   updateProject,
 );
 router.delete(
-  "/:id",
+  "/:projectId",
   isLoggedIn,
   projectIdValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN]),
+  hasRequiredRole([UserRolesEnum.ADMIN]),
   deleteProject,
 );
 
 // Project members routes
 router.get(
-  "/:id/members",
+  "/:projectId/members",
   isLoggedIn,
   projectIdValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
   getProjectMembers,
 );
 router.post(
-  "/:id/members",
+  "/:projectId/members",
   isLoggedIn,
   projectIdValidator(),
   projectMemberValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
+  hasRequiredAccess({
+    [UserRolesEnum.ADMIN]: [UserRolesEnum.MANAGER, UserRolesEnum.MEMBER],
+    [UserRolesEnum.MANAGER]: [UserRolesEnum.MEMBER],
+  }),
   addMemberToProject,
 );
 router.patch(
-  "/:id/members/:memberId",
+  "/:projectId/members/:memberId",
   isLoggedIn,
   projectIdValidator(),
   projectMemberIdValidator(),
   projectMemberRoleValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  hasRequiredRole([UserRolesEnum.ADMIN]),
+  hasRequiredAccess({
+    [UserRolesEnum.ADMIN]: [UserRolesEnum.MANAGER, UserRolesEnum.MEMBER],
+  }),
   updateMemberRole,
 );
 router.delete(
-  "/:id/members/:memberId",
+  "/:projectId/members/:memberId",
   isLoggedIn,
   projectIdValidator(),
   projectMemberIdValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
+  addUserRoleToReqObj,
+  hasRequiredAccess({
+    [UserRolesEnum.ADMIN]: [UserRolesEnum.MANAGER, UserRolesEnum.MEMBER],
+    [UserRolesEnum.MANAGER]: [UserRolesEnum.MEMBER],
+  }),
   deleteMemberFromProject,
 );
 
 // Project notes routes
 router.get(
-  "/:id/notes",
+  "/:projectId/notes",
   isLoggedIn,
   projectIdValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getNotes,
 );
 
 router.get(
-  "/:id/notes/:noteId",
+  "/:projectId/notes/:noteId",
   isLoggedIn,
   projectIdValidator(),
   projectNoteIdValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getNoteById,
 );
 
 router.post(
-  "/:id/notes",
+  "/:projectId/notes",
   isLoggedIn,
   projectIdValidator(),
   projectNoteValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
   createNote,
 );
 
 router.patch(
-  "/:id/notes/:noteId",
+  "/:projectId/notes/:noteId",
   isLoggedIn,
   projectIdValidator(),
   projectNoteIdValidator(),
   projectNoteValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
   updateNote,
 );
 
 router.delete(
-  "/:id/notes/:noteId",
+  "/:projectId/notes/:noteId",
   isLoggedIn,
   projectIdValidator(),
   projectNoteIdValidator(),
   validate,
-  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
   deleteNote,
 );
 

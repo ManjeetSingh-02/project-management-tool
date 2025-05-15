@@ -27,8 +27,8 @@ export const isLoggedIn = asyncHandler(async (req, _, next) => {
   next();
 });
 
-// function for role based access control
-export const hasRequiredPerms = (roles = []) =>
+// function for checking if user has required role
+export const hasRequiredRole = roles =>
   asyncHandler(async (req, _, next) => {
     // get id from params
     const { id } = req.params;
@@ -39,7 +39,7 @@ export const hasRequiredPerms = (roles = []) =>
 
     // check if user has permission
     if (!roles.includes(existingMember.role))
-      throw new APIError(403, "Security Error", "Access Denied for this action");
+      throw new APIError(403, "Security Error", "Access Denied for not having required role");
 
     // set user role in request object
     req.user.role = existingMember.role;
@@ -47,3 +47,36 @@ export const hasRequiredPerms = (roles = []) =>
     // forward request to next middleware
     next();
   });
+
+// function for role based access control
+export const hasRequiredAccess = roles =>
+  asyncHandler(async (req, _, next) => {
+    // get action role from request
+    const { role } = req.body;
+
+    // check if user current role has permission to perform action
+    if (!roles[req.user.role].includes(role))
+      throw new APIError(403, "Security Error", "Access Denied for not having required perms");
+
+    // forward request to next middleware
+    next();
+  });
+
+// function to add the user role into request for projectmemberdeletion
+export const addUserRoleToReqObj = asyncHandler(async (req, _, next) => {
+  // get id and member id from params
+  const { id, memberId } = req.params;
+
+  // check if project member exists
+  const existingMember = await ProjectMember.findOne({
+    user: memberId,
+    project: id,
+  });
+  if (!existingMember) throw new APIError(400, "Security Error", "Invalid Project Id");
+
+  // add user role to request body for project member deletion
+  req.body.role = existingMember.role;
+
+  // forward request to next middleware
+  next();
+});
