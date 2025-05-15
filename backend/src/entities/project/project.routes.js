@@ -34,7 +34,7 @@ import {
 } from "./projectmember/projectmember.controllers.js";
 
 // project notes controllers
-import { getNotes } from "./note/note.controllers.js";
+import { getNotes, getNoteById } from "./note/note.controllers.js";
 
 const router = Router();
 
@@ -122,7 +122,7 @@ router.get(
   projectNoteIdValidator(),
   validate,
   hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
-  getNotes,
+  getNoteById,
 );
 
 export default router;
