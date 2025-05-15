@@ -9,7 +9,7 @@ import { UserRolesEnum } from "../../utils/constants.js";
 export const getProjects = asyncHandler(async (req, res) => {
   // get all projects in which the user is assigned
   const allProjects = await ProjectMember.find({ user: req.user.id })
-    .select("project role")
+    .select("project role -_id")
     .populate("project", "_id name description createdBy");
   if (!allProjects.length) throw new APIError(400, "Get All Projects Error", "No projects found");
 
@@ -22,7 +22,9 @@ export const getProjectById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id }).select("-createdAt -updatedAt -__v");
+  const existingProject = await Project.findOne({ _id: id })
+    .select("-createdAt -updatedAt -__v")
+    .populate("createdBy", "_id username email");
   if (!existingProject) throw new APIError(400, "Get Project Error", "Project not found");
 
   // success status to user
@@ -56,7 +58,16 @@ export const createProject = asyncHandler(async (req, res) => {
     throw new APIError(400, "Project Creation Error", "Project default member creation failed");
 
   // success status to user
-  return res.status(201).json(new APIResponse(201, "Project created successfully"));
+  return res.status(201).json(
+    new APIResponse(201, "Project created successfully", {
+      project: {
+        _id: newProject._id,
+        name: newProject.name,
+        description: newProject.description,
+        createdAt: newProject.createdAt,
+      },
+    }),
+  );
 });
 
 export const updateProject = asyncHandler(async (req, res) => {
@@ -66,12 +77,24 @@ export const updateProject = asyncHandler(async (req, res) => {
   // get data
   const { name, description } = req.body;
 
+  // check if a project with same name having different id exists
+  const existingProject = await Project.findOne({
+    name,
+    _id: {
+      $ne: id,
+    },
+  });
+  if (existingProject)
+    throw new APIError(
+      400,
+      "Update Project Error",
+      "Another project with same name already exists",
+    );
+
   // update project details in db
-  const updatedProject = await Project.findByIdAndUpdate(
-    id,
-    { name, description },
-    { new: true },
-  ).select("-createdAt -updatedAt -__v");
+  const updatedProject = await Project.findByIdAndUpdate(id, { name, description }, { new: true })
+    .select("-createdAt -updatedAt -__v")
+    .populate("createdBy", "_id username email");
   if (!updatedProject)
     throw new APIError(400, "Update Project Error", "Project details updation failed");
 
