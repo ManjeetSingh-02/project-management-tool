@@ -5,11 +5,11 @@ import { ProjectNote } from "./note.models.js";
 import { UserRolesEnum } from "../../../utils/constants.js";
 
 export const getNotes = asyncHandler(async (req, res) => {
-  // get id from params
-  const { id } = req.params;
+  // get projectId from params
+  const { projectId } = req.params;
 
   // get all project notes
-  const allNotes = await ProjectNote.find({ project: id })
+  const allNotes = await ProjectNote.find({ project: projectId })
     .select("-__v")
     .populate("createdBy", "username")
     .populate("project", "name");
@@ -21,11 +21,11 @@ export const getNotes = asyncHandler(async (req, res) => {
 });
 
 export const getNoteById = asyncHandler(async (req, res) => {
-  // get id and noteId from params
-  const { id, noteId } = req.params;
+  // get projectId and noteId from params
+  const { projectId, noteId } = req.params;
 
   // check if note exists
-  const existingNote = await ProjectNote.findOne({ _id: noteId, project: id })
+  const existingNote = await ProjectNote.findOne({ _id: noteId, project: projectId })
     .select("-__v")
     .populate("createdBy", "username")
     .populate("project", "name");
@@ -36,15 +36,15 @@ export const getNoteById = asyncHandler(async (req, res) => {
 });
 
 export const createNote = asyncHandler(async (req, res) => {
-  // get id from params
-  const { id } = req.params;
+  // get projectId from params
+  const { projectId } = req.params;
 
   // get content from body
   const { content } = req.body;
 
   // check if note already exists by same user
   const existingNote = await ProjectNote.findOne({
-    project: id,
+    project: projectId,
     createdBy: req.user.id,
     content: content,
   });
@@ -57,7 +57,7 @@ export const createNote = asyncHandler(async (req, res) => {
 
   // create new note
   const newNote = await ProjectNote.create({
-    project: id,
+    project: projectId,
     createdBy: req.user.id,
     content,
   });
@@ -68,8 +68,8 @@ export const createNote = asyncHandler(async (req, res) => {
 });
 
 export const updateNote = asyncHandler(async (req, res) => {
-  // get id and noteId from params
-  const { id, noteId } = req.params;
+  // get projectId and noteId from params
+  const { projectId, noteId } = req.params;
 
   // get content from body
   const { content } = req.body;
@@ -78,7 +78,7 @@ export const updateNote = asyncHandler(async (req, res) => {
   const updatedNote = await ProjectNote.findOneAndUpdate(
     {
       _id: noteId,
-      project: id,
+      project: projectId,
       createdBy: req.user.id,
     },
     { content },
@@ -96,13 +96,13 @@ export const updateNote = asyncHandler(async (req, res) => {
 });
 
 export const deleteNote = asyncHandler(async (req, res) => {
-  // get id and noteId from params
-  const { id, noteId } = req.params;
+  // get projectId and noteId from params
+  const { projectId, noteId } = req.params;
 
   //check if note exists
   const existingNote = await ProjectNote.findOne({
     _id: noteId,
-    project: id,
+    project: projectId,
   });
   if (!existingNote) throw new APIError(400, "Delete Note Error", "Note not found");
 
@@ -116,7 +116,7 @@ export const deleteNote = asyncHandler(async (req, res) => {
   // delete note
   await ProjectNote.findOneAndDelete({
     _id: noteId,
-    project: id,
+    project: projectId,
   });
 
   // success status to user

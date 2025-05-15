@@ -18,11 +18,11 @@ export const getProjects = asyncHandler(async (req, res) => {
 });
 
 export const getProjectById = asyncHandler(async (req, res) => {
-  // get id from params
-  const { id } = req.params;
+  // get projectId from params
+  const { projectId } = req.params;
 
   // check if project exists
-  const existingProject = await Project.findOne({ _id: id })
+  const existingProject = await Project.findOne({ _id: projectId })
     .select("-createdAt -updatedAt -__v")
     .populate("createdBy", "_id username email");
   if (!existingProject) throw new APIError(400, "Get Project Error", "Project not found");
@@ -71,8 +71,8 @@ export const createProject = asyncHandler(async (req, res) => {
 });
 
 export const updateProject = asyncHandler(async (req, res) => {
-  // get id from params
-  const { id } = req.params;
+  // get projectId from params
+  const { projectId } = req.params;
 
   // get data
   const { name, description } = req.body;
@@ -81,7 +81,7 @@ export const updateProject = asyncHandler(async (req, res) => {
   const existingProject = await Project.findOne({
     name,
     _id: {
-      $ne: id,
+      $ne: projectId,
     },
   });
   if (existingProject)
@@ -103,17 +103,17 @@ export const updateProject = asyncHandler(async (req, res) => {
 });
 
 export const deleteProject = asyncHandler(async (req, res) => {
-  // get id from params
-  const { id } = req.params;
+  // get projectId from params
+  const { projectId } = req.params;
 
   // delete project members notes from db
-  await ProjectNote.deleteMany({ project: id });
+  await ProjectNote.deleteMany({ project: projectId });
 
   // delete projectmembers from db
-  await ProjectMember.deleteMany({ project: id });
+  await ProjectMember.deleteMany({ project: projectId });
 
   // delete project from db
-  await Project.findOneAndDelete({ _id: id, createdBy: req.user.id });
+  await Project.findOneAndDelete({ _id: projectId, createdBy: req.user.id });
 
   // success status to user
   return res.status(200).json(new APIResponse(200, "Project deleted successfully"));
