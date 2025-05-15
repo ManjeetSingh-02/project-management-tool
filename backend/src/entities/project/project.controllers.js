@@ -3,6 +3,7 @@ import { Project } from "./project.models.js";
 import { APIError } from "../../utils/api/apiError.js";
 import { APIResponse } from "../../utils/api/apiResponse.js";
 import { ProjectMember } from "./projectmember/projectmember.models.js";
+import { ProjectNote } from "./note/note.models.js";
 import { UserRolesEnum } from "../../utils/constants.js";
 
 export const getProjects = asyncHandler(async (req, res) => {
@@ -81,6 +82,9 @@ export const updateProject = asyncHandler(async (req, res) => {
 export const deleteProject = asyncHandler(async (req, res) => {
   // get id from params
   const { id } = req.params;
+
+  // delete project members notes from db
+  await ProjectNote.deleteMany({ project: id });
 
   // delete projectmembers from db
   await ProjectMember.deleteMany({ project: id });

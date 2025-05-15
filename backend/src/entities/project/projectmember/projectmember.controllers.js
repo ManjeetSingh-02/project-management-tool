@@ -4,6 +4,7 @@ import { APIResponse } from "../../../utils/api/apiResponse.js";
 import { ProjectMember } from "./projectmember.models.js";
 import { UserRolesEnum } from "../../../utils/constants.js";
 import { User } from "../../user/user.models.js";
+import { ProjectNote } from "../note/note.models.js";
 
 export const getProjectMembers = asyncHandler(async (req, res) => {
   // get id from params
@@ -75,6 +76,12 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
     existingProjectMember.user.toString() !== req.user.id.toString()
   )
     throw new APIError(400, "Delete Member Error", "Cannot delete a project admin");
+
+  // remove all project notes of the user
+  await ProjectNote.deleteMany({
+    project: id,
+    createdBy: memberId,
+  });
 
   // delete project member from db
   await existingProjectMember.deleteOne();
