@@ -28,7 +28,7 @@ export const isLoggedIn = asyncHandler(async (req, _, next) => {
 });
 
 // function for role based access control
-export const hasRolePermission = (roles = []) =>
+export const hasRequiredPerms = (roles = []) =>
   asyncHandler(async (req, _, next) => {
     // get id from params
     const { id } = req.params;
