@@ -53,6 +53,10 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
   // get id and memberId from params
   const { id, memberId } = req.params;
 
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id });
+  if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
+
   // check if project member exists
   const existingProjectMember = await ProjectMember.findOne({
     project: id,
