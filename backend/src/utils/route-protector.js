@@ -2,7 +2,7 @@ import { APIError } from "./api/apiError.js";
 import { asyncHandler } from "./async-handler.js";
 import jwt from "jsonwebtoken";
 import { User } from "../entities/user/user.models.js";
-import { ProjectMember } from "../entities/project/projectmember.models.js";
+import { ProjectMember } from "../entities/project/projectmember/projectmember.models.js";
 
 // function to check for any validation errors
 export const isLoggedIn = asyncHandler(async (req, _, next) => {

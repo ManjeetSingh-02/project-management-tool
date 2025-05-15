@@ -1,16 +1,5 @@
 import { Router } from "express";
 import {
-  createProject,
-  getProjects,
-  getProjectById,
-  updateProject,
-  deleteProject,
-  getProjectMembers,
-  addMemberToProject,
-  deleteMemberFromProject,
-  updateMemberRole,
-} from "./project.controllers.js";
-import {
   projectValidator,
   projectIdValidator,
   projectMemberIdValidator,
@@ -21,8 +10,29 @@ import { validate } from "../../utils/validator/index.js";
 import { isLoggedIn, hasRolePermission } from "../../utils/route-protector.js";
 import { UserRolesEnum } from "../../utils/constants.js";
 
+// project controllers
+import {
+  createProject,
+  getProjects,
+  getProjectById,
+  updateProject,
+  deleteProject,
+} from "./project.controllers.js";
+
+// project members controllers
+import {
+  getProjectMembers,
+  addMemberToProject,
+  deleteMemberFromProject,
+  updateMemberRole,
+} from "./projectmember/projectmember.controllers.js";
+
+// project notes controllers
+import { getNotes } from "./note/note.controllers.js";
+
 const router = Router();
 
+// Project routes
 router.get("/", isLoggedIn, getProjects);
 router.get(
   "/:id",
@@ -51,6 +61,7 @@ router.delete(
   deleteProject,
 );
 
+// Project members routes
 router.get(
   "/:id/members",
   isLoggedIn,
@@ -86,6 +97,16 @@ router.delete(
   validate,
   hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
   deleteMemberFromProject,
+);
+
+// Project notes routes
+router.get(
+  "/:id/notes",
+  isLoggedIn,
+  projectIdValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
+  getNotes,
 );
 
 export default router;

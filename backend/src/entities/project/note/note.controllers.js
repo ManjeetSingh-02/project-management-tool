@@ -1,6 +1,6 @@
-import { asyncHandler } from "../../utils/async-handler.js";
-import { APIError } from "../../utils/api/apiError.js";
-import { APIResponse } from "../../utils/api/apiResponse.js";
+import { asyncHandler } from "../../../utils/async-handler.js";
+import { APIError } from "../../../utils/api/apiError.js";
+import { APIResponse } from "../../../utils/api/apiResponse.js";
 import { ProjectNote } from "./note.models.js";
 
 export const getNotes = asyncHandler(async (req, res) => {
