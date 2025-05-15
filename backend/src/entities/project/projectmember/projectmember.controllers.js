@@ -12,7 +12,9 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // get project members
-  const projectMembers = await ProjectMember.find({ project: id }).select("-updatedAt -__v");
+  const projectMembers = await ProjectMember.find({ project: id })
+    .select("-project -updatedAt -__v")
+    .populate("user", "_id username email");
 
   // success status to user
   return res
@@ -46,9 +48,20 @@ export const addMemberToProject = asyncHandler(async (req, res) => {
     throw new APIError(400, "Add Member to Project Error", "New project member addition failed");
 
   // success status to user
-  return res
-    .status(201)
-    .json(new APIResponse(201, "Project member added successfully", newProjectMember));
+  return res.status(201).json(
+    new APIResponse(201, "Project member added successfully", {
+      member: {
+        _id: newProjectMember._id,
+        user: {
+          _id: existingUser._id,
+          username: existingUser.username,
+          email: existingUser.email,
+        },
+        role: newProjectMember.role,
+        createdAt: newProjectMember.createdAt,
+      },
+    }),
+  );
 });
 
 export const deleteMemberFromProject = asyncHandler(async (req, res) => {
@@ -73,6 +86,7 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
 
   // check if user is admin of the project and trying to delete other admin (leave project)
   if (
+    req.user.role === UserRolesEnum.PROJECT_ADMIN &&
     existingProjectMember.role === UserRolesEnum.PROJECT_ADMIN &&
     existingProjectMember.user.toString() !== req.user.id.toString()
   )
@@ -95,11 +109,17 @@ export const updateMemberRole = asyncHandler(async (req, res) => {
   // get id and memberId from params
   const { id, memberId } = req.params;
 
+  // check if project exists
+  const existingProject = await Project.findOne({ _id: id });
+  if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
+
   // check if project member exists
   const existingProjectMember = await ProjectMember.findOne({
     project: id,
     user: memberId,
-  });
+  })
+    .select("-project -__v")
+    .populate("user", "_id username email");
   if (!existingProjectMember)
     throw new APIError(400, "Update Member Role Error", "Project member not found");
 
