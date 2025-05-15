@@ -8,7 +8,7 @@ export const getNotes = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // get all project notes
-  const allNotes = await ProjectNote.find({ project: id }).select("-createdAt -updatedAt -__v");
+  const allNotes = await ProjectNote.find({ project: id }).select("-__v");
   if (!allNotes.length)
     throw new APIError(400, "Get All Notes Error", "No notes found for this project");
 

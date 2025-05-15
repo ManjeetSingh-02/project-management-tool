@@ -10,7 +10,7 @@ export const getProjectMembers = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   // get project members
-  const projectMembers = await ProjectMember.find({ project: id }).select("_id user project role");
+  const projectMembers = await ProjectMember.find({ project: id }).select("-updatedAt -__v");
 
   // success status to user
   return res
