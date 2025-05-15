@@ -13,6 +13,9 @@ import {
   projectMemberRoleValidator,
 } from "../../utils/validator/projectmember.validators.js";
 
+// project notes validators
+import { projectNoteIdValidator } from "../../utils/validator/note.validators.js";
+
 // project controllers
 import {
   createProject,
@@ -107,6 +110,16 @@ router.get(
   "/:id/notes",
   isLoggedIn,
   projectIdValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
+  getNotes,
+);
+
+router.get(
+  "/:id/notes/:noteId",
+  isLoggedIn,
+  projectIdValidator(),
+  projectNoteIdValidator(),
   validate,
   hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
   getNotes,
