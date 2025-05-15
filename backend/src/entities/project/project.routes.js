@@ -1,14 +1,17 @@
 import { Router } from "express";
-import {
-  projectValidator,
-  projectIdValidator,
-  projectMemberIdValidator,
-  projectMemberValidator,
-  projectMemberRoleValidator,
-} from "../../utils/validator/projectValidators.js";
 import { validate } from "../../utils/validator/index.js";
 import { isLoggedIn, hasRolePermission } from "../../utils/route-protector.js";
 import { UserRolesEnum } from "../../utils/constants.js";
+
+// project validators
+import { projectValidator, projectIdValidator } from "../../utils/validator/project.validators.js";
+
+// project members validators
+import {
+  projectMemberIdValidator,
+  projectMemberValidator,
+  projectMemberRoleValidator,
+} from "../../utils/validator/projectmember.validators.js";
 
 // project controllers
 import {
