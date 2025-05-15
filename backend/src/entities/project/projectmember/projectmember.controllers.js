@@ -5,6 +5,7 @@ import { ProjectMember } from "./projectmember.models.js";
 import { UserRolesEnum } from "../../../utils/constants.js";
 import { User } from "../../user/user.models.js";
 import { ProjectNote } from "../note/note.models.js";
+import { Project } from "../project.models.js";
 
 export const getProjectMembers = asyncHandler(async (req, res) => {
   // get id from params
