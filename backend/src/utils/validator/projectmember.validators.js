@@ -1,5 +1,5 @@
 import { body, param } from "express-validator";
-import { AvailableUserRoles } from "../constants.js";
+import { UserRolesEnum } from "../constants.js";
 
 export const projectMemberValidator = () => {
   return [
@@ -7,8 +7,8 @@ export const projectMemberValidator = () => {
     body("role")
       .trim()
       .optional()
-      .isIn(AvailableUserRoles)
-      .withMessage("project member role should be either admin, project_admin or member"),
+      .isIn([UserRolesEnum.MANAGER, UserRolesEnum.MEMBER])
+      .withMessage("project member role should be either manager or member"),
   ];
 };
 
@@ -24,7 +24,7 @@ export const projectMemberRoleValidator = () => {
       .trim()
       .notEmpty()
       .withMessage("project member role is required")
-      .isIn(AvailableUserRoles)
-      .withMessage("project member role should be either admin, project_admin or member"),
+      .isIn([UserRolesEnum.MANAGER, UserRolesEnum.MEMBER])
+      .withMessage("project member role should be either manager or member"),
   ];
 };
