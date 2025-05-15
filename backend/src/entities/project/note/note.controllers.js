@@ -2,6 +2,7 @@ import { asyncHandler } from "../../../utils/async-handler.js";
 import { APIError } from "../../../utils/api/apiError.js";
 import { APIResponse } from "../../../utils/api/apiResponse.js";
 import { ProjectNote } from "./note.models.js";
+import { UserRolesEnum } from "../../../utils/constants.js";
 
 export const getNotes = asyncHandler(async (req, res) => {
   // get id from params
@@ -94,4 +95,30 @@ export const updateNote = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Note updated successfully", updatedNote));
 });
 
-export const deleteNote = async (req, res) => {};
+export const deleteNote = asyncHandler(async (req, res) => {
+  // get id and noteId from params
+  const { id, noteId } = req.params;
+
+  //check if note exists
+  const existingNote = await ProjectNote.findOne({
+    _id: noteId,
+    project: id,
+  });
+  if (!existingNote) throw new APIError(400, "Delete Note Error", "Note not found");
+
+  // check if user not admin and trying to delete other's note
+  if (
+    req.user.role !== UserRolesEnum.ADMIN &&
+    existingNote.createdBy.toString() !== req.user.id.toString()
+  )
+    throw new APIError(400, "Delete Note Error", "You don't have permission to delete this note");
+
+  // delete note
+  await ProjectNote.findOneAndDelete({
+    _id: noteId,
+    project: id,
+  });
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Note deleted successfully"));
+});
