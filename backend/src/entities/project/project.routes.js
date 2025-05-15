@@ -37,7 +37,7 @@ import {
 } from "./projectmember/projectmember.controllers.js";
 
 // project notes controllers
-import { getNotes, getNoteById, createNote } from "./note/note.controllers.js";
+import { getNotes, getNoteById, createNote, updateNote } from "./note/note.controllers.js";
 
 const router = Router();
 
@@ -136,6 +136,17 @@ router.post(
   validate,
   hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
   createNote,
+);
+
+router.patch(
+  "/:id/notes/:noteId",
+  isLoggedIn,
+  projectIdValidator(),
+  projectNoteIdValidator(),
+  projectNoteValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  updateNote,
 );
 
 export default router;

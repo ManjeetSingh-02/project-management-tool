@@ -66,6 +66,32 @@ export const createNote = asyncHandler(async (req, res) => {
   return res.status(201).json(new APIResponse(201, "Note created successfully", newNote));
 });
 
-export const updateNote = async (req, res) => {};
+export const updateNote = asyncHandler(async (req, res) => {
+  // get id and noteId from params
+  const { id, noteId } = req.params;
+
+  // get content from body
+  const { content } = req.body;
+
+  // update note
+  const updatedNote = await ProjectNote.findOneAndUpdate(
+    {
+      _id: noteId,
+      project: id,
+      createdBy: req.user.id,
+    },
+    { content },
+    { new: true },
+  );
+  if (!updatedNote)
+    throw new APIError(
+      400,
+      "Update Note Error",
+      "Note not found or you don't have permission to update this note",
+    );
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Note updated successfully", updatedNote));
+});
 
 export const deleteNote = async (req, res) => {};
