@@ -14,7 +14,10 @@ import {
 } from "../../utils/validator/projectmember.validators.js";
 
 // project notes validators
-import { projectNoteIdValidator } from "../../utils/validator/note.validators.js";
+import {
+  projectNoteIdValidator,
+  projectNoteValidator,
+} from "../../utils/validator/note.validators.js";
 
 // project controllers
 import {
@@ -34,7 +37,7 @@ import {
 } from "./projectmember/projectmember.controllers.js";
 
 // project notes controllers
-import { getNotes, getNoteById } from "./note/note.controllers.js";
+import { getNotes, getNoteById, createNote } from "./note/note.controllers.js";
 
 const router = Router();
 
@@ -123,6 +126,16 @@ router.get(
   validate,
   hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN, UserRolesEnum.MEMBER]),
   getNoteById,
+);
+
+router.post(
+  "/:id/notes",
+  isLoggedIn,
+  projectIdValidator(),
+  projectNoteValidator(),
+  validate,
+  hasRolePermission([UserRolesEnum.ADMIN, UserRolesEnum.PROJECT_ADMIN]),
+  createNote,
 );
 
 export default router;
