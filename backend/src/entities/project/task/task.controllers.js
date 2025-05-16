@@ -20,7 +20,24 @@ export const getTasks = asyncHandler(async (req, res) => {
   return res.status(200).json(new APIResponse(200, "Tasks fetched successfully", allTasks));
 });
 
-export const getTaskById = async (req, res) => {};
+export const getTaskById = asyncHandler(async (req, res) => {
+  // get projectId and taskId from params
+  const { projectId, taskId } = req.params;
+
+  // get the task assigned to the project for the user
+  const existingTask = await Task.findOne({
+    project: projectId,
+    _id: taskId,
+    assignedTo: req.user.id,
+  })
+    .select("-__v")
+    .populate("project", "_id name")
+    .populate("assignedTo", "_id username email")
+    .populate("assignedBy", "_id username email");
+  if (!existingTask) throw new APIError(404, "Get Task Error", "Task not found");
+
+  return res.status(200).json(new APIResponse(200, "Tasks fetched successfully", existingTask));
+});
 
 export const createTask = async (req, res) => {};
 

@@ -24,6 +24,9 @@ import {
   projectNoteValidator,
 } from "../../utils/validator/note.validators.js";
 
+// project tasks validators
+import { taskIdValidator } from "../../utils/validator/task.validators.js";
+
 // project controllers
 import {
   createProject,
@@ -51,7 +54,7 @@ import {
 } from "./note/note.controllers.js";
 
 // project tasks controllers
-import { getTasks } from "./task/task.controllers.js";
+import { getTaskById, getTasks } from "./task/task.controllers.js";
 
 const router = Router();
 
@@ -189,5 +192,14 @@ router.get(
   validate,
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getTasks,
+);
+router.get(
+  "/:projectId/tasks/:taskId",
+  isLoggedIn,
+  projectIdValidator(),
+  taskIdValidator(),
+  validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
+  getTaskById,
 );
 export default router;
