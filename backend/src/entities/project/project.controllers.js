@@ -11,7 +11,6 @@ export const getProjects = asyncHandler(async (req, res) => {
   const allProjects = await ProjectMember.find({ user: req.user.id })
     .select("project role -_id")
     .populate("project", "_id name description createdBy");
-  if (!allProjects.length) throw new APIError(400, "Get All Projects Error", "No projects found");
 
   // success status to user
   return res.status(200).json(new APIResponse(200, "Projects fetched successfully", allProjects));
@@ -80,7 +79,8 @@ export const updateProject = asyncHandler(async (req, res) => {
 
   // check if a project with same name having different id exists
   const existingProject = await Project.findOne({
-    name,
+    name: name.trim(),
+    createdBy: req.user.id,
     _id: {
       $ne: projectId,
     },
@@ -93,7 +93,11 @@ export const updateProject = asyncHandler(async (req, res) => {
     );
 
   // update project details in db
-  const updatedProject = await Project.findByIdAndUpdate(projectId, { name, description }, { new: true })
+  const updatedProject = await Project.findByIdAndUpdate(
+    projectId,
+    { name, description },
+    { new: true },
+  )
     .select("-createdAt -updatedAt -__v")
     .populate("createdBy", "_id username email");
   if (!updatedProject)
