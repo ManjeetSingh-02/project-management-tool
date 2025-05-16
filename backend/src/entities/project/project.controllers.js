@@ -41,8 +41,9 @@ export const createProject = asyncHandler(async (req, res) => {
   const { name, description } = req.body;
 
   // check if project already exists
-  const existingProject = await Project.findOne({ name });
-  if (existingProject) throw new APIError(400, "Project Creation Error", "Project already exists");
+  const existingProject = await Project.findOne({ name: name.trim(), createdBy: req.user.id });
+  if (existingProject)
+    throw new APIError(400, "Project Creation Error", "Project with same name already exists");
 
   // create new project in db
   const newProject = await Project.create({ name, description, createdBy: req.user.id });
