@@ -50,6 +50,9 @@ import {
   deleteNote,
 } from "./note/note.controllers.js";
 
+// project tasks controllers
+import { getTasks } from "./task/task.controllers.js";
+
 const router = Router();
 
 // Project routes
@@ -178,4 +181,13 @@ router.delete(
   deleteNote,
 );
 
+// project tasks routes
+router.get(
+  "/:projectId/tasks",
+  isLoggedIn,
+  projectIdValidator(),
+  validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
+  getTasks,
+);
 export default router;
