@@ -24,5 +24,5 @@ export const projectValidator = () => {
 
 // function to check for project id validation errors
 export const projectIdValidator = () => {
-  return [param("id").trim().isMongoId().withMessage("project id is invalid")];
+  return [param("projectId").trim().isMongoId().withMessage("project id is invalid")];
 };

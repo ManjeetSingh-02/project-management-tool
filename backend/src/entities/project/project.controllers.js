@@ -92,7 +92,7 @@ export const updateProject = asyncHandler(async (req, res) => {
     );
 
   // update project details in db
-  const updatedProject = await Project.findByIdAndUpdate(id, { name, description }, { new: true })
+  const updatedProject = await Project.findByIdAndUpdate(projectId, { name, description }, { new: true })
     .select("-createdAt -updatedAt -__v")
     .populate("createdBy", "_id username email");
   if (!updatedProject)

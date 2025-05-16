@@ -5,7 +5,6 @@ import { ProjectMember } from "./projectmember.models.js";
 import { UserRolesEnum } from "../../../utils/constants.js";
 import { User } from "../../user/user.models.js";
 import { ProjectNote } from "../note/note.models.js";
-import { Project } from "../project.models.js";
 
 export const getProjectMembers = asyncHandler(async (req, res) => {
   // get projectId from params
@@ -68,29 +67,11 @@ export const deleteMemberFromProject = asyncHandler(async (req, res) => {
   // get projectId and memberId from params
   const { projectId, memberId } = req.params;
 
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: projectId });
-  if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
-
-  // check if project member exists
+  // get project member from db
   const existingProjectMember = await ProjectMember.findOne({
     project: projectId,
     user: memberId,
   });
-  if (!existingProjectMember)
-    throw new APIError(400, "Update Member Role Error", "Project member not found");
-
-  // check if someone is trying to delete the creator
-  if (existingProject.createdBy.toString() === memberId)
-    throw new APIError(400, "Delete Member Error", "Cannot delete project creator");
-
-  // check if user is admin of the project and trying to delete other admin (leave project)
-  if (
-    req.user.role === UserRolesEnum.PROJECT_ADMIN &&
-    existingProjectMember.role === UserRolesEnum.PROJECT_ADMIN &&
-    existingProjectMember.user.toString() !== req.user.id.toString()
-  )
-    throw new APIError(400, "Delete Member Error", "Cannot delete a project admin");
 
   // remove all project notes of the user
   await ProjectNote.deleteMany({
@@ -109,10 +90,6 @@ export const updateMemberRole = asyncHandler(async (req, res) => {
   // get projectId and memberId from params
   const { projectId, memberId } = req.params;
 
-  // check if project exists
-  const existingProject = await Project.findOne({ _id: projectId });
-  if (!existingProject) throw new APIError(400, "Update Member Role Error", "Project not found");
-
   // check if project member exists
   const existingProjectMember = await ProjectMember.findOne({
     project: projectId,
@@ -123,31 +100,16 @@ export const updateMemberRole = asyncHandler(async (req, res) => {
   if (!existingProjectMember)
     throw new APIError(400, "Update Member Role Error", "Project member not found");
 
+  // check if project member is admin and trying to update his role
+  if (existingProjectMember.role === UserRolesEnum.ADMIN)
+    throw new APIError(400, "Update Member Role Error", "Can't update role of project admin");
+
   // get data
   const { role } = req.body;
 
-  // check if user is trying to update their own role
-  if (existingProjectMember.user.toString() === req.user.id.toString())
-    throw new APIError(400, "Update Member Role Error", "Cannot update your own role");
-
-  // check if user is trying to update the creator's role
-  if (existingProject.createdBy.toString() === memberId)
-    throw new APIError(400, "Update Member Role Error", "Cannot update project creator's role");
-
-  // check if a project_admin user is trying to update other project_admin's role
-  if (
-    req.user.role === UserRolesEnum.PROJECT_ADMIN &&
-    existingProjectMember.role === UserRolesEnum.PROJECT_ADMIN
-  )
-    throw new APIError(
-      400,
-      "Update Member Role Error",
-      "Only admin can update other project_admin's role",
-    );
-
   // check if role is same as existing role
   if (existingProjectMember.role === role)
-    throw new APIError(400, "Update Member Role Error", "Project member already has this role");
+    throw new APIError(400, "Update Member Role Error", "User already has this role");
 
   // update project member role
   existingProjectMember.role = role;
