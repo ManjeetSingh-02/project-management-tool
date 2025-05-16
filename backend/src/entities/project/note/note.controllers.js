@@ -2,7 +2,6 @@ import { asyncHandler } from "../../../utils/async-handler.js";
 import { APIError } from "../../../utils/api/apiError.js";
 import { APIResponse } from "../../../utils/api/apiResponse.js";
 import { ProjectNote } from "./note.models.js";
-import { UserRolesEnum } from "../../../utils/constants.js";
 
 export const getNotes = asyncHandler(async (req, res) => {
   // get projectId from params
@@ -13,8 +12,6 @@ export const getNotes = asyncHandler(async (req, res) => {
     .select("-__v")
     .populate("createdBy", "username")
     .populate("project", "name");
-  if (!allNotes.length)
-    throw new APIError(400, "Get All Notes Error", "No notes found for this project");
 
   // success status to user
   return res.status(200).json(new APIResponse(200, "Notes fetched successfully", allNotes));
@@ -46,7 +43,7 @@ export const createNote = asyncHandler(async (req, res) => {
   const existingNote = await ProjectNote.findOne({
     project: projectId,
     createdBy: req.user.id,
-    content: content,
+    content: content.trim(),
   });
   if (existingNote)
     throw new APIError(
@@ -64,7 +61,16 @@ export const createNote = asyncHandler(async (req, res) => {
   if (!newNote) throw new APIError(400, "Create Note Error", "Note not created");
 
   // success status to user
-  return res.status(201).json(new APIResponse(201, "Note created successfully", newNote));
+  return res.status(201).json(
+    new APIResponse(201, "Note created successfully", {
+      note: {
+        _id: newNote._id,
+        content: newNote.content,
+        createdAt: newNote.createdAt,
+        updatedAt: newNote.updatedAt,
+      },
+    }),
+  );
 });
 
 export const updateNote = asyncHandler(async (req, res) => {
@@ -92,7 +98,16 @@ export const updateNote = asyncHandler(async (req, res) => {
     );
 
   // success status to user
-  return res.status(200).json(new APIResponse(200, "Note updated successfully", updatedNote));
+  return res.status(200).json(
+    new APIResponse(200, "Note updated successfully", {
+      note: {
+        _id: updatedNote._id,
+        content: updatedNote.content,
+        createdAt: updatedNote.createdAt,
+        updatedAt: updatedNote.updatedAt,
+      },
+    }),
+  );
 });
 
 export const deleteNote = asyncHandler(async (req, res) => {
@@ -103,20 +118,15 @@ export const deleteNote = asyncHandler(async (req, res) => {
   const existingNote = await ProjectNote.findOne({
     _id: noteId,
     project: projectId,
+    createdBy: req.user.id,
   });
   if (!existingNote) throw new APIError(400, "Delete Note Error", "Note not found");
-
-  // check if user not admin and trying to delete other's note
-  if (
-    req.user.role !== UserRolesEnum.ADMIN &&
-    existingNote.createdBy.toString() !== req.user.id.toString()
-  )
-    throw new APIError(400, "Delete Note Error", "You don't have permission to delete this note");
 
   // delete note
   await ProjectNote.findOneAndDelete({
     _id: noteId,
     project: projectId,
+    createdBy: req.user.id,
   });
 
   // success status to user
