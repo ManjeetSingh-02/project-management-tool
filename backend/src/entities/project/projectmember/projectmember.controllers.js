@@ -44,7 +44,11 @@ export const addMemberToProject = asyncHandler(async (req, res) => {
     role,
   });
   if (!newProjectMember)
-    throw new APIError(400, "Add Member to Project Error", "New project member addition failed");
+    throw new APIError(
+      400,
+      "Add Member to Project Error",
+      "Something went wrong while adding a member to this project",
+    );
 
   // success status to user
   return res.status(201).json(

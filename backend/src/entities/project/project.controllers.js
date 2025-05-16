@@ -46,7 +46,12 @@ export const createProject = asyncHandler(async (req, res) => {
 
   // create new project in db
   const newProject = await Project.create({ name, description, createdBy: req.user.id });
-  if (!newProject) throw new APIError(400, "Project Creation Error", "Project creation failed");
+  if (!newProject)
+    throw new APIError(
+      400,
+      "Project Creation Error",
+      "Something went wrong while creating project",
+    );
 
   // create project member in db
   const defaultProjectMember = await ProjectMember.create({
@@ -55,7 +60,11 @@ export const createProject = asyncHandler(async (req, res) => {
     role: UserRolesEnum.ADMIN,
   });
   if (!defaultProjectMember)
-    throw new APIError(400, "Project Creation Error", "Project default member creation failed");
+    throw new APIError(
+      400,
+      "Project Creation Error",
+      "Something went wrong while creating project admin",
+    );
 
   // success status to user
   return res.status(201).json(
@@ -101,7 +110,7 @@ export const updateProject = asyncHandler(async (req, res) => {
     .select("-createdAt -updatedAt -__v")
     .populate("createdBy", "_id username email");
   if (!updatedProject)
-    throw new APIError(400, "Update Project Error", "Project details updation failed");
+    throw new APIError(400, "Update Project Error", "Something went wrong while updating project");
 
   // success status to user
   return res.status(200).json(new APIResponse(200, "Project updated successfully", updatedProject));
