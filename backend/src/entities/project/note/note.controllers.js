@@ -8,9 +8,8 @@ export const getNotes = asyncHandler(async (req, res) => {
   const { projectId } = req.params;
 
   // get all project notes
-  const allNotes = await ProjectNote.find({ project: projectId })
-    .select("-__v")
-    .populate("createdBy", "username")
+  const allNotes = await ProjectNote.find({ project: projectId, createdBy: req.user.id })
+    .select("-createdBy -__v")
     .populate("project", "name");
 
   // success status to user
@@ -22,9 +21,12 @@ export const getNoteById = asyncHandler(async (req, res) => {
   const { projectId, noteId } = req.params;
 
   // check if note exists
-  const existingNote = await ProjectNote.findOne({ _id: noteId, project: projectId })
-    .select("-__v")
-    .populate("createdBy", "username")
+  const existingNote = await ProjectNote.findOne({
+    _id: noteId,
+    project: projectId,
+    createdBy: req.user.id,
+  })
+    .select("-createdBy -__v")
     .populate("project", "name");
   if (!existingNote) throw new APIError(400, "Get Note Error", "Note not found");
 
@@ -39,18 +41,14 @@ export const createNote = asyncHandler(async (req, res) => {
   // get content from body
   const { content } = req.body;
 
-  // check if note already exists by same user
+  // check if note already exists by same user for the same project
   const existingNote = await ProjectNote.findOne({
     project: projectId,
     createdBy: req.user.id,
     content: content.trim(),
   });
   if (existingNote)
-    throw new APIError(
-      400,
-      "Create Note Error",
-      "Note already exists for this project by this user",
-    );
+    throw new APIError(400, "Create Note Error", "Note already exists for this project and user");
 
   // create new note
   const newNote = await ProjectNote.create({
@@ -58,7 +56,8 @@ export const createNote = asyncHandler(async (req, res) => {
     createdBy: req.user.id,
     content,
   });
-  if (!newNote) throw new APIError(400, "Create Note Error", "Note not created");
+  if (!newNote)
+    throw new APIError(400, "Create Note Error", "Something went wrong while creating note");
 
   // success status to user
   return res.status(201).json(
@@ -80,6 +79,22 @@ export const updateNote = asyncHandler(async (req, res) => {
   // get content from body
   const { content } = req.body;
 
+  // check if note already exists by same user for the same project
+  const existingNote = await ProjectNote.findOne({
+    _id: {
+      $ne: noteId,
+    },
+    project: projectId,
+    createdBy: req.user.id,
+    content: content.trim(),
+  });
+  if (existingNote)
+    throw new APIError(
+      400,
+      "Update Note Error",
+      "Another note with same content already exists for this project and user",
+    );
+
   // update note
   const updatedNote = await ProjectNote.findOneAndUpdate(
     {
@@ -91,11 +106,7 @@ export const updateNote = asyncHandler(async (req, res) => {
     { new: true },
   );
   if (!updatedNote)
-    throw new APIError(
-      400,
-      "Update Note Error",
-      "Note not found or you don't have permission to update this note",
-    );
+    throw new APIError(400, "Update Note Error", "Something went wrong while updating note");
 
   // success status to user
   return res.status(200).json(

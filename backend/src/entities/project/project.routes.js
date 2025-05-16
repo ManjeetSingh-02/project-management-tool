@@ -140,7 +140,6 @@ router.get(
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getNotes,
 );
-
 router.get(
   "/:projectId/notes/:noteId",
   isLoggedIn,
@@ -150,17 +149,15 @@ router.get(
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getNoteById,
 );
-
 router.post(
   "/:projectId/notes",
   isLoggedIn,
   projectIdValidator(),
   projectNoteValidator(),
   validate,
-  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   createNote,
 );
-
 router.patch(
   "/:projectId/notes/:noteId",
   isLoggedIn,
@@ -168,15 +165,16 @@ router.patch(
   projectNoteIdValidator(),
   projectNoteValidator(),
   validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   updateNote,
 );
-
 router.delete(
   "/:projectId/notes/:noteId",
   isLoggedIn,
   projectIdValidator(),
   projectNoteIdValidator(),
   validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   deleteNote,
 );
 
