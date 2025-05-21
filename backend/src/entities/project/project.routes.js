@@ -211,8 +211,8 @@ router.post(
   validate,
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
   validateUserAccess({
-    [UserRolesEnum.ADMIN]: [UserRolesEnum.MANAGER, UserRolesEnum.MEMBER],
-    [UserRolesEnum.MANAGER]: [UserRolesEnum.MEMBER],
+    [UserRolesEnum.ADMIN]: [UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER],
+    [UserRolesEnum.MANAGER]: [UserRolesEnum.MANAGER, UserRolesEnum.MEMBER],
   }),
   createTask,
 );

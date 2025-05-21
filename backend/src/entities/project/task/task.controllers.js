@@ -3,21 +3,30 @@ import { APIError } from "../../../utils/api/apiError.js";
 import { APIResponse } from "../../../utils/api/apiResponse.js";
 import { Task } from "./task.models.js";
 import { User } from "../../user/user.models.js";
+import { UserRolesEnum } from "../../../utils/constants.js";
 
 export const getTasks = asyncHandler(async (req, res) => {
   // get projectId from params
   const { projectId } = req.params;
 
-  // get all the tasks assigned to the project for the user
-  const allTasks = await Task.find({
-    project: projectId,
-    assignedTo: req.user.id,
-  })
-    .select("-__v")
-    .populate("project", "_id name")
-    .populate("assignedTo", "_id username email")
-    .populate("assignedBy", "_id username email");
+  // get all tasks for the project
+  const allTasks =
+    req.user.role === UserRolesEnum.ADMIN || req.user.role === UserRolesEnum.MANAGER
+      ? await Task.find({ project: projectId })
+          .select("-__v")
+          .populate("project", "_id name")
+          .populate("assignedTo", "_id username email")
+          .populate("assignedBy", "_id username email")
+      : await Task.find({
+          project: projectId,
+          $or: [{ assignedTo: req.user.id }, { assignedBy: req.user.id }],
+        })
+          .select("-__v")
+          .populate("project", "_id name")
+          .populate("assignedTo", "_id username email")
+          .populate("assignedBy", "_id username email");
 
+  // success status to user
   return res.status(200).json(new APIResponse(200, "Tasks fetched successfully", allTasks));
 });
 
@@ -25,19 +34,27 @@ export const getTaskById = asyncHandler(async (req, res) => {
   // get projectId and taskId from params
   const { projectId, taskId } = req.params;
 
-  // get the task assigned to the project for the user
-  const existingTask = await Task.findOne({
-    project: projectId,
-    _id: taskId,
-    assignedTo: req.user.id,
-  })
-    .select("-__v")
-    .populate("project", "_id name")
-    .populate("assignedTo", "_id username email")
-    .populate("assignedBy", "_id username email");
-  if (!existingTask) throw new APIError(404, "Get Task Error", "Task not found");
+  // check if task exists for the project
+  const existingTask =
+    req.user.role === UserRolesEnum.ADMIN || req.user.role === UserRolesEnum.MANAGER
+      ? await Task.findOne({ project: projectId, _id: taskId })
+          .select("-__v")
+          .populate("project", "_id name")
+          .populate("assignedTo", "_id username email")
+          .populate("assignedBy", "_id username email")
+      : await Task.findOne({
+          project: projectId,
+          _id: taskId,
+          $or: [{ assignedTo: req.user.id }, { assignedBy: req.user.id }],
+        })
+          .select("-__v")
+          .populate("project", "_id name")
+          .populate("assignedTo", "_id username email")
+          .populate("assignedBy", "_id username email");
+  if (!existingTask) throw new APIError(400, "Get Task Error", "Task not found");
 
-  return res.status(200).json(new APIResponse(200, "Tasks fetched successfully", existingTask));
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Task fetched successfully", existingTask));
 });
 
 export const createTask = asyncHandler(async (req, res) => {
