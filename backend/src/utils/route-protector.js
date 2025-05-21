@@ -80,3 +80,36 @@ export const addUserRoleToReqObj = asyncHandler(async (req, _, next) => {
   // forward request to next middleware
   next();
 });
+
+export const validateUserAccess = roles =>
+  asyncHandler(async (req, _, next) => {
+    // get projectId from params
+    const { projectId } = req.params;
+
+    // get assignedTo from request
+    const { assignedTo } = req.body;
+
+    // find role of loggedin user
+    const loggedInUser = await ProjectMember.findOne({
+      user: req.user.id,
+      project: projectId,
+    });
+    if (!loggedInUser) throw new APIError(400, "Security Error", "Invalid Project Id");
+
+    // find assignedTo user
+    const existingUser = await ProjectMember.findOne({
+      user: assignedTo,
+      project: projectId,
+    });
+    if (!existingUser) throw new APIError(400, "Security Error", "Invalid User Id");
+
+    // check if loggedInUser has permission to assign task to existingUser
+    if (
+      roles[loggedInUser.role] === undefined ||
+      !roles[loggedInUser.role].includes(existingUser.role)
+    )
+      throw new APIError(403, "Security Error", "Access Denied for not having required perms");
+
+    // forward request to next middleware
+    next();
+  });

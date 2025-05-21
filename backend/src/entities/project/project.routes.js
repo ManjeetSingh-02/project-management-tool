@@ -5,6 +5,7 @@ import {
   hasRequiredRole,
   hasRequiredAccess,
   addUserRoleToReqObj,
+  validateUserAccess,
 } from "../../utils/route-protector.js";
 import { UserRolesEnum } from "../../utils/constants.js";
 
@@ -25,7 +26,7 @@ import {
 } from "../../utils/validator/note.validators.js";
 
 // project tasks validators
-import { taskIdValidator } from "../../utils/validator/task.validators.js";
+import { taskIdValidator, taskValidator } from "../../utils/validator/task.validators.js";
 
 // project controllers
 import {
@@ -54,7 +55,7 @@ import {
 } from "./note/note.controllers.js";
 
 // project tasks controllers
-import { getTaskById, getTasks } from "./task/task.controllers.js";
+import { getTaskById, getTasks, createTask } from "./task/task.controllers.js";
 
 const router = Router();
 
@@ -202,4 +203,18 @@ router.get(
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getTaskById,
 );
+router.post(
+  "/:projectId/tasks",
+  isLoggedIn,
+  projectIdValidator(),
+  taskValidator(),
+  validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
+  validateUserAccess({
+    [UserRolesEnum.ADMIN]: [UserRolesEnum.MANAGER, UserRolesEnum.MEMBER],
+    [UserRolesEnum.MANAGER]: [UserRolesEnum.MEMBER],
+  }),
+  createTask,
+);
+
 export default router;
