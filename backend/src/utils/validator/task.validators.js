@@ -13,9 +13,9 @@ export const taskValidator = () => {
       .notEmpty()
       .withMessage("task title is required")
       .isLength({ min: 3 })
-      .withMessage("task name should be atleast 3 chars")
+      .withMessage("task title should be atleast 3 chars")
       .isLength({ max: 13 })
-      .withMessage("task name should not be more than 13 chars"),
+      .withMessage("task title should not be more than 13 chars"),
     body("description")
       .trim()
       .notEmpty()
@@ -24,7 +24,7 @@ export const taskValidator = () => {
       .withMessage("task description should be atleast 10 chars")
       .isLength({ max: 100 })
       .withMessage("task description should not be more than 100 chars"),
-    body("assignedToUserId")
+    body("assignedTo")
       .trim()
       .notEmpty()
       .withMessage("assigned to user id is required")
