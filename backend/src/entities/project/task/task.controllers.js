@@ -68,14 +68,9 @@ export const createTask = asyncHandler(async (req, res) => {
   const existingTask = await Task.findOne({
     project: projectId,
     title,
-    assignedTo,
   });
   if (existingTask)
-    throw new APIError(
-      400,
-      "Create Task Error",
-      "Task already exists for this project and already assigned to same user",
-    );
+    throw new APIError(400, "Create Task Error", "Task already exists for this project");
 
   // create a new task
   const newTask = await Task.create({
