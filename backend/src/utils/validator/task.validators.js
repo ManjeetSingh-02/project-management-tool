@@ -36,7 +36,6 @@ export const taskValidator = () => {
       .optional()
       .isIn(AvailableTaskStatuses)
       .withMessage("project status can be todo or in_progress or done"),
-    ,
     body("attachments").optional().isArray().withMessage("attachments should be an array"),
   ];
 };
