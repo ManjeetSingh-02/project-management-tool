@@ -107,6 +107,35 @@ export const createTask = asyncHandler(async (req, res) => {
   );
 });
 
-export const updateTask = async (req, res) => {};
+export const updateTask = asyncHandler(async (req, res) => {
+  // get projectId and taskId from params
+  const { projectId, taskId } = req.params;
+
+  // get task status from body
+  const { status } = req.body;
+
+  // update task status
+  const updatedTask = await Task.findOneAndUpdate(
+    {
+      project: projectId,
+      _id: taskId,
+    },
+    { status },
+    { new: true },
+  );
+  if (!updatedTask)
+    throw new APIError(400, "Update Task Error", "Something went wrong while updating task");
+
+  // success status to user
+  return res.status(200).json(
+    new APIResponse(200, "Task updated successfully", {
+      task: {
+        _id: updatedTask._id,
+        status: updatedTask.status,
+        updatedAt: updatedTask.updatedAt,
+      },
+    }),
+  );
+});
 
 export const deleteTask = async (req, res) => {};

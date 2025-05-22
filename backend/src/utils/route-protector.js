@@ -3,6 +3,8 @@ import { asyncHandler } from "./async-handler.js";
 import jwt from "jsonwebtoken";
 import { User } from "../entities/user/user.models.js";
 import { ProjectMember } from "../entities/project/projectmember/projectmember.models.js";
+import { Task } from "../entities/project/task/task.models.js";
+import { UserRolesEnum } from "./constants.js";
 
 // function to check for any validation errors
 export const isLoggedIn = asyncHandler(async (req, _, next) => {
@@ -81,6 +83,7 @@ export const addUserRoleToReqObj = asyncHandler(async (req, _, next) => {
   next();
 });
 
+// function to check for user access to assign task
 export const validateUserAccess = roles =>
   asyncHandler(async (req, _, next) => {
     // get projectId from params
@@ -113,3 +116,26 @@ export const validateUserAccess = roles =>
     // forward request to next middleware
     next();
   });
+
+// funtion to check for user access to update task
+export const validateTaskAccess = asyncHandler(async (req, _, next) => {
+  // get projectId and taskId from params
+  const { projectId, taskId } = req.params;
+
+  // find task
+  const existingTask = await Task.findOne({
+    project: projectId,
+    _id: taskId,
+  });
+  if (!existingTask) throw new APIError(400, "Security Error", "Invalid Task Id");
+
+  // check if loggedInUser has permission to update task of existingUser
+  if (
+    req.user.role !== UserRolesEnum.ADMIN &&
+    req.user.id.toString() !== existingTask.assignedBy.toString()
+  )
+    throw new APIError(403, "Security Error", "Access Denied for not having required perms");
+
+  // forward request to next middleware
+  next();
+});
