@@ -33,6 +33,9 @@ import {
   taskValidator,
 } from "../../utils/validator/task.validators.js";
 
+// project subtasks validators
+import { subTaskValidator } from "../../utils/validator/subtask.validators.js";
+
 // project controllers
 import {
   createProject,
@@ -69,7 +72,7 @@ import {
 } from "./task/task.controllers.js";
 
 // project subtasks controllers
-import { getSubTasks } from "./task/subtask/subtask.controllers.js";
+import { createSubTask, getSubTasks } from "./task/subtask/subtask.controllers.js";
 
 const router = Router();
 
@@ -262,5 +265,15 @@ router.get(
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
   getSubTasks,
 );
-
+router.post(
+  "/:projectId/tasks/:taskId/subtasks",
+  isLoggedIn,
+  projectIdValidator(),
+  taskIdValidator(),
+  subTaskValidator(),
+  validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
+  validateTaskAccess,
+  createSubTask,
+);
 export default router;
