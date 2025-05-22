@@ -68,6 +68,9 @@ import {
   deleteTask,
 } from "./task/task.controllers.js";
 
+// project subtasks controllers
+import { getSubTasks } from "./task/subtask/subtask.controllers.js";
+
 const router = Router();
 
 // Project routes
@@ -196,7 +199,7 @@ router.delete(
   deleteNote,
 );
 
-// project tasks routes
+// Project tasks routes
 router.get(
   "/:projectId/tasks",
   isLoggedIn,
@@ -247,6 +250,17 @@ router.delete(
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
   validateTaskAccess,
   deleteTask,
+);
+
+// Project subtasks routes
+router.get(
+  "/:projectId/tasks/:taskId/subtasks",
+  isLoggedIn,
+  projectIdValidator(),
+  taskIdValidator(),
+  validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER, UserRolesEnum.MEMBER]),
+  getSubTasks,
 );
 
 export default router;
