@@ -138,4 +138,16 @@ export const updateTask = asyncHandler(async (req, res) => {
   );
 });
 
-export const deleteTask = async (req, res) => {};
+export const deleteTask = asyncHandler(async (req, res) => {
+  // get projectId and taskId from params
+  const { projectId, taskId } = req.params;
+
+  // delete task
+  await Task.findOneAndDelete({
+    project: projectId,
+    _id: taskId,
+  });
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "Task deleted successfully"));
+});

@@ -60,7 +60,13 @@ import {
 } from "./note/note.controllers.js";
 
 // project tasks controllers
-import { getTaskById, getTasks, createTask, updateTask } from "./task/task.controllers.js";
+import {
+  getTaskById,
+  getTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+} from "./task/task.controllers.js";
 
 const router = Router();
 
@@ -231,6 +237,16 @@ router.patch(
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
   validateTaskAccess,
   updateTask,
+);
+router.delete(
+  "/:projectId/tasks/:taskId",
+  isLoggedIn,
+  projectIdValidator(),
+  taskIdValidator(),
+  validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
+  validateTaskAccess,
+  deleteTask,
 );
 
 export default router;

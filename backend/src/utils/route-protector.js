@@ -117,7 +117,7 @@ export const validateUserAccess = roles =>
     next();
   });
 
-// funtion to check for user access to update task
+// funtion to check for user access to update/delete task
 export const validateTaskAccess = asyncHandler(async (req, _, next) => {
   // get projectId and taskId from params
   const { projectId, taskId } = req.params;
@@ -129,7 +129,7 @@ export const validateTaskAccess = asyncHandler(async (req, _, next) => {
   });
   if (!existingTask) throw new APIError(400, "Security Error", "Invalid Task Id");
 
-  // check if loggedInUser has permission to update task of existingUser
+  // check if loggedInUser has permission to update/delete task
   if (
     req.user.role !== UserRolesEnum.ADMIN &&
     req.user.id.toString() !== existingTask.assignedBy.toString()
