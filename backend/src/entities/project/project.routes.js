@@ -76,7 +76,12 @@ import {
 } from "./task/task.controllers.js";
 
 // project subtasks controllers
-import { createSubTask, getSubTasks, updateSubTask } from "./task/subtask/subtask.controllers.js";
+import {
+  createSubTask,
+  deleteSubTask,
+  getSubTasks,
+  updateSubTask,
+} from "./task/subtask/subtask.controllers.js";
 
 const router = Router();
 
@@ -291,5 +296,16 @@ router.patch(
   hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
   validateTaskAccess,
   updateSubTask,
+);
+router.delete(
+  "/:projectId/tasks/:taskId/subtasks/:subTaskId",
+  isLoggedIn,
+  projectIdValidator(),
+  taskIdValidator(),
+  subTaskIdValidator(),
+  validate,
+  hasRequiredRole([UserRolesEnum.ADMIN, UserRolesEnum.MANAGER]),
+  validateTaskAccess,
+  deleteSubTask,
 );
 export default router;

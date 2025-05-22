@@ -65,7 +65,6 @@ export const updateSubTask = asyncHandler(async (req, res) => {
     {
       _id: subTaskId,
       task: taskId,
-      createdBy: req.user.id,
     },
     {
       isCompleted,
@@ -90,4 +89,16 @@ export const updateSubTask = asyncHandler(async (req, res) => {
   );
 });
 
-export const deleteSubTask = async (req, res) => {};
+export const deleteSubTask = asyncHandler(async (req, res) => {
+  // get taskId and subTaskId from params
+  const { taskId, subTaskId } = req.params;
+
+  // delete subtask
+  await SubTask.findOneAndDelete({
+    _id: subTaskId,
+    task: taskId,
+  });
+
+  // success status to user
+  return res.status(200).json(new APIResponse(200, "SubTask deleted successfully"));
+});
