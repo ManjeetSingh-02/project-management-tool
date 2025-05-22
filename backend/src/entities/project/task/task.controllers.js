@@ -3,6 +3,7 @@ import { APIError } from "../../../utils/api/apiError.js";
 import { APIResponse } from "../../../utils/api/apiResponse.js";
 import { Task } from "./task.models.js";
 import { User } from "../../user/user.models.js";
+import { SubTask } from "./subtask/subtask.models.js";
 import { UserRolesEnum } from "../../../utils/constants.js";
 
 export const getTasks = asyncHandler(async (req, res) => {
@@ -141,6 +142,11 @@ export const updateTask = asyncHandler(async (req, res) => {
 export const deleteTask = asyncHandler(async (req, res) => {
   // get projectId and taskId from params
   const { projectId, taskId } = req.params;
+
+  // delete task subtasks from db
+  await SubTask.deleteMany({
+    task: taskId,
+  });
 
   // delete task
   await Task.findOneAndDelete({

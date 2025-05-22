@@ -4,6 +4,8 @@ import { APIError } from "../../utils/api/apiError.js";
 import { APIResponse } from "../../utils/api/apiResponse.js";
 import { ProjectMember } from "./projectmember/projectmember.models.js";
 import { ProjectNote } from "./note/note.models.js";
+import { Task } from "./task/task.models.js";
+import { SubTask } from "./task/subtask/subtask.models.js";
 import { UserRolesEnum } from "../../utils/constants.js";
 
 export const getProjects = asyncHandler(async (req, res) => {
@@ -119,6 +121,16 @@ export const updateProject = asyncHandler(async (req, res) => {
 export const deleteProject = asyncHandler(async (req, res) => {
   // get projectId from params
   const { projectId } = req.params;
+
+  // delete task subtasks from db
+  await SubTask.deleteMany({
+    task: {
+      $in: await Task.find({ project: projectId }).distinct("_id"),
+    },
+  });
+
+  // delete project tasks from db
+  await Task.deleteMany({ project: projectId });
 
   // delete project members notes from db
   await ProjectNote.deleteMany({ project: projectId });
