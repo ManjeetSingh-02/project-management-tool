@@ -1,4 +1,5 @@
 import { body, param } from "express-validator";
+import { AvailableTaskStatuses } from "../constants.js";
 
 // function to check for task id validation errors
 export const taskIdValidator = () => {
@@ -30,6 +31,12 @@ export const taskValidator = () => {
       .withMessage("assigned to user id is required")
       .isMongoId()
       .withMessage("invalid user id"),
+    body("status")
+      .trim()
+      .optional()
+      .isIn(AvailableTaskStatuses)
+      .withMessage("project status can be todo or in_progress or done"),
+    ,
     body("attachments").optional().isArray().withMessage("attachments should be an array"),
   ];
 };

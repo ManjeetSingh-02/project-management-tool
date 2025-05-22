@@ -62,7 +62,7 @@ export const createTask = asyncHandler(async (req, res) => {
   const { projectId } = req.params;
 
   // get task details from body
-  const { title, description, assignedTo, attachments } = req.body;
+  const { title, description, assignedTo, status, attachments } = req.body;
 
   // check if task already exists for same project and user
   const existingTask = await Task.findOne({
@@ -79,6 +79,7 @@ export const createTask = asyncHandler(async (req, res) => {
     project: projectId,
     assignedTo,
     assignedBy: req.user.id,
+    status,
     attachments,
   });
   if (!newTask)
