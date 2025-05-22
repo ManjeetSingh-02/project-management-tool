@@ -53,6 +53,41 @@ export const createSubTask = asyncHandler(async (req, res) => {
   );
 });
 
-export const updateSubTask = async (req, res) => {};
+export const updateSubTask = asyncHandler(async (req, res) => {
+  // get taskId and subTaskId from params
+  const { taskId, subTaskId } = req.params;
+
+  // get subTask status from body
+  const { isCompleted } = req.body;
+
+  // update subtask status
+  const updatedSubTask = await SubTask.findOneAndUpdate(
+    {
+      _id: subTaskId,
+      task: taskId,
+      createdBy: req.user.id,
+    },
+    {
+      isCompleted,
+    },
+    { new: true },
+  );
+  if (!updatedSubTask)
+    throw new APIError(
+      400,
+      "Update SubTask Error",
+      "Invalid SubTask Id or Something went wrong while updating subtask",
+    );
+
+  // success status to user
+  return res.status(200).json(
+    new APIResponse(200, "SubTask updated successfully", {
+      subtask: {
+        _id: updatedSubTask._id,
+        status: updatedSubTask.isCompleted,
+      },
+    }),
+  );
+});
 
 export const deleteSubTask = async (req, res) => {};
